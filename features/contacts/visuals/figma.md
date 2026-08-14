@@ -17,7 +17,6 @@ https://www.figma.com/design/wXSz455HWRiP6veaCxaTBG/email-campaign?node-id=6-2&t
 
 ---
 
-
 ## Notes
 
 - These links are the authoritative visual design for this feature.

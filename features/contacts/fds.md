@@ -18,6 +18,7 @@ changelog:
 Provide capability to manage individual client contacts within the internal application.
 
 ## 2. Visual & UI Specification
+
 - Authoritative Figma Frame: [`features/contacts/visuals/figma.md`](features/contacts/visuals/figma.md) (Node ID: `6-2`)
 
 ## 3. Data Model (`Contact`)
@@ -33,12 +34,14 @@ Provide capability to manage individual client contacts within the internal appl
 ## 4. Functional Requirements
 
 ### REQ-CON-01: Create Contact
+
 - Must validate `name`, `email`, and `branch`.
 - Email address must be unique across all contacts.
 - System automatically generates a unique `clientId` (e.g. `LOCAL-<uuid>`).
 - Returns the created `Contact` object.
 
 ### REQ-CON-02: View & List Contacts (UI Redesign)
+
 - Displays contacts in modern table layout matching Figma Node `6-2` (`visuals/contacts-design.png`):
   - Total count subtitle under header (`X total contacts found`).
   - Table columns: Checkbox, Client ID (`#` prefix in blue text), Name (initial badge + bold name), Email (mail icon + email), Branch (map pin + location), Group (pill badge), Date Added, Actions (Edit/Delete).
@@ -46,14 +49,17 @@ Provide capability to manage individual client contacts within the internal appl
 - A contact may belong to more than one group. The badge displays the first group name; if the contact belongs to additional groups, append a `+N` indicator (e.g. `VIP Clients +2`).
 
 ### REQ-CON-03: Search & Group Filtering
+
 - Supports case-insensitive searching by `name`, `email`, or `branch`.
 - Supports filtering by Group dropdown ("All Groups").
 
 ### REQ-CON-04: Edit Contact
+
 - Allows updating existing contact details (`name`, `email`, `branch`).
 - Enforces email uniqueness validation on update.
 
 ### REQ-CON-05: Delete Contact
+
 - Permanently removes contact from the database upon user confirmation.
 - Deleting a contact automatically removes it from every group it belongs to. This MUST be consistent on both sides of the relationship: the deleted contact is dropped from each group's member set, so affected groups' contact counts and member previews stay accurate immediately after deletion — not just the contact's own group associations.
 - Deleting a contact does NOT alter historical sent campaigns.
