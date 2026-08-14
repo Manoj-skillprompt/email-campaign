@@ -19,7 +19,6 @@ Provide capability to manage individual client contacts within the internal appl
 
 ## 2. Visual & UI Specification
 - Authoritative Figma Frame: [`features/contacts/visuals/figma.md`](features/contacts/visuals/figma.md) (Node ID: `6-2`)
-- Design reference screenshot: [`features/contacts/visuals/contacts-design.png`](features/contacts/visuals/contacts-design.png)
 
 ## 3. Data Model (`Contact`)
 
