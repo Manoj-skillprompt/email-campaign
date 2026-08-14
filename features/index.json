@@ -8,11 +8,10 @@
       "title": "Contacts Management",
       "domain": "contacts",
       "status": "active",
-      "version": "1.2.0",
+      "version": "1.0.0",
       "path": "features/contacts/fds.md",
       "behavior_spec": "features/contacts/behavior.md",
       "figma_spec": "features/contacts/visuals/figma.md",
-      "visual_spec": "features/contacts/visuals/visual-spec.md",
       "owner": "contacts-team",
       "dependencies": []
     }

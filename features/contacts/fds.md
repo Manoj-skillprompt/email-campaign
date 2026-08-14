@@ -2,22 +2,13 @@
 id: contacts
 title: Contacts Management
 status: active
-version: 1.2.0
+version: 1.0.0
 owner: contacts-team
-last_updated: 2026-08-07
+last_updated: 2026-08-14
 changelog:
-  - version: 1.2.0
-    date: 2026-08-07
-    pr: "#007"
-    summary: Bug-fix pass — Group badge now reflects real membership (REQ-CON-02), and contact deletion keeps group membership consistent on both sides (REQ-CON-05)
-  - version: 1.1.0
-    date: 2026-08-07
-    pr: "#004"
-    summary: Redesigned Contacts UI layout based on new visual design spec & Figma reference
   - version: 1.0.0
-    date: 2026-08-06
-    pr: "#001"
-    summary: Initial specification for Contacts management
+    date: 2026-08-14
+    summary: Initial specification for Contacts management (email-campaign-v2)
 ---
 
 # Feature Specification: Contacts Management
@@ -27,8 +18,8 @@ changelog:
 Provide capability to manage individual client contacts within the internal application.
 
 ## 2. Visual & UI Specification
-- Authoritative Figma Frame: [`features/contacts/visuals/figma.md`](file:///home/sujal/programming/work/email-campaign/features/contacts/visuals/figma.md) (Node ID: `6-2`)
-- Visual Mockups & Spec: [`features/contacts/visuals/visual-spec.md`](file:///home/sujal/programming/work/email-campaign/features/contacts/visuals/visual-spec.md) and [`features/contacts/visuals/contacts-design.png`](file:///home/sujal/programming/work/email-campaign/features/contacts/visuals/contacts-design.png).
+- Authoritative Figma Frame: [`features/contacts/visuals/figma.md`](features/contacts/visuals/figma.md) (Node ID: `6-2`)
+- Design reference screenshot: [`features/contacts/visuals/contacts-design.png`](features/contacts/visuals/contacts-design.png)
 
 ## 3. Data Model (`Contact`)
 
