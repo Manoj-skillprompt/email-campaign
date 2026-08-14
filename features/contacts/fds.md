@@ -5,6 +5,9 @@ status: active
 version: 1.0.0
 owner: contacts-team
 last_updated: 2026-08-14
+coverage_target: 80
+compliance_relevant: false
+dependencies: []
 changelog:
   - version: 1.0.0
     date: 2026-08-14
