@@ -8,7 +8,8 @@ last_updated: 2026-08-14
 changelog:
   - version: 1.0.0
     date: 2026-08-14
-    summary: Initial specification for Contacts management (email-campaign-v2)
+    pr: "#001"
+    summary: Initial specification for Contacts management
 ---
 
 # Feature Specification: Contacts Management
@@ -17,11 +18,7 @@ changelog:
 
 Provide capability to manage individual client contacts within the internal application.
 
-## 2. Visual & UI Specification
-
-- Authoritative Figma Frame: [`features/contacts/visuals/figma.md`](features/contacts/visuals/figma.md) (Node ID: `6-2`)
-
-## 3. Data Model (`Contact`)
+## 2. Data Model (`Contact`)
 
 - `id`: string (UUID, Primary Key)
 - `clientId`: string (Unique, auto-generated, e.g. `LOCAL-<uuid>`)
@@ -31,7 +28,7 @@ Provide capability to manage individual client contacts within the internal appl
 - `createdAt`: string (ISO Timestamp)
 - `updatedAt`: string (ISO Timestamp)
 
-## 4. Functional Requirements
+## 3. Functional Requirements
 
 ### REQ-CON-01: Create Contact
 
@@ -42,14 +39,12 @@ Provide capability to manage individual client contacts within the internal appl
 
 ### REQ-CON-02: View & List Contacts
 
-- Displays contacts in a table layout matching the Figma design (Node ID: `6-2`).
-- Table columns: Client ID (`#` prefix), Name, Email, Branch, Date Added, Actions (Edit / Delete).
-- Shows total contact count subtitle (`X total contacts found`).
+- Displays all contacts in tabular format with Client ID, Name, Email, Branch, Date Added.
 
 ### REQ-CON-03: Search Contacts
 
 - Supports case-insensitive searching by `name`, `email`, or `branch`.
-- When no contacts match the search, display an empty state.
+- Search updates results dynamically without requiring page navigation.
 
 ### REQ-CON-04: Edit Contact
 
@@ -61,13 +56,13 @@ Provide capability to manage individual client contacts within the internal appl
 - Permanently removes contact from the database upon user confirmation.
 - Deleting a contact does NOT alter historical sent campaigns.
 
-## 5. Validation Rules
+## 4. Validation Rules
 
 - Required fields: Name, Email, Branch.
 - Email must be a valid email format (`user@domain.com`).
-- Duplicate emails are rejected with a conflict error.
+- Duplicate emails are rejected with conflict error.
 
-## 6. API / Interface Specification
+## 5. API / Interface Specification
 
 - `createContact(data: { name: string; email: string; branch: string }): Promise<Contact>`
 - `getContacts(query?: { search?: string }): Promise<Contact[]>`
