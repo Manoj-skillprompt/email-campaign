@@ -45,6 +45,7 @@ FDS + Visual Design + Behavior Spec
 ## 2. Phase Definitions
 
 ### Phase 1 — Plan Mode (`.ai/prompts/plan-mode-system.md`)
+
 - **Role**: Read-only specification analyzer and task planner.
 - **Input**: `fds.md`, `behavior.md`, `visuals/`, `rules/`
 - **Output**: `features/<id>/plan.md`
@@ -54,12 +55,14 @@ FDS + Visual Design + Behavior Spec
   - Zero conflicts between FDS and `rules/`.
 
 ### Phase 2 — Developer Approval Gate
+
 - **Role**: Human review checkpoint after planning, before any code is written.
 - **Action**: Developer reviews `features/<id>/plan.md` and either approves or requests changes.
 - **On approval**: All specs (`fds.md`, `behavior.md`, `visuals/`) are frozen. No changes permitted without creating a new version and restarting planning.
 - **Exit criteria**: Explicit human approval is recorded.
 
 ### Phase 3 — Frontend Build Mode (`.ai/prompts/frontend-build-mode-system.md`)
+
 - **Role**: Implements UI components using mock data only. No real backend calls.
 - **Rules**:
   - Implements only tasks marked `layer: frontend` in `plan.md`.
@@ -69,12 +72,14 @@ FDS + Visual Design + Behavior Spec
 - **Exit criteria**: Lint and typecheck pass. All frontend tasks complete. Mock data structures documented in `features/<id>/presentation-contract.md`.
 
 ### Phase 4 — UI Review & Freeze
+
 - **Role**: Human or LLM visual review of the frontend against the visual spec.
 - **Evaluation criteria**: Each acceptance criterion in `visuals/figma.md` must be confirmed as satisfied or explicitly noted as deferred.
 - **On freeze**: `features/<id>/presentation-contract.md` is frozen. It becomes the authoritative API contract the backend must satisfy.
 - **Exit criteria**: Reviewer explicitly signs off. Presentation Contract is frozen.
 
 ### Phase 5 — Backend Build Mode (`.ai/prompts/backend-build-mode-system.md`)
+
 - **Role**: Implements backend API layers (Presentation → Service → Repository → Database) to satisfy the frozen Presentation Contract.
 - **Rules**:
   - Implements only tasks marked `layer: backend` in `plan.md`.
@@ -84,6 +89,7 @@ FDS + Visual Design + Behavior Spec
 - **Exit criteria**: Lint and typecheck pass. All backend tasks complete. API shapes match the Presentation Contract.
 
 ### Phase 6 — Integration Build Mode (`.ai/prompts/integration-build-mode-system.md`)
+
 - **Role**: Replaces frontend mock data with real backend API calls via ts-rest client.
 - **Rules**:
   - Implements only tasks marked `layer: integration` in `plan.md`.
@@ -92,6 +98,7 @@ FDS + Visual Design + Behavior Spec
 - **Exit criteria**: Lint and typecheck pass. All integration tasks complete. No mock data remaining in production code paths.
 
 ### Phase 7 — Code Validation 1 — Static Analysis Gate
+
 - **Tool**: SonarQube with **Static Analysis Gate** profile (no coverage threshold).
 - **What it checks**: Code smells, security vulnerabilities, complexity violations, duplication.
 - **Rules**:
@@ -100,6 +107,7 @@ FDS + Visual Design + Behavior Spec
 - **Exit criteria**: SonarQube Static Analysis Gate passes with zero blocker/critical issues.
 
 ### Phase 8 — Testing Build Mode (`.ai/prompts/testing-build-mode-system.md`)
+
 - **Role**: Spec-driven, post-implementation test generation.
 - **Input**: Frozen FDS (`fds.md`), Behavior Spec (`behavior.md`), integrated source code.
 - **Rules**:
@@ -111,6 +119,7 @@ FDS + Visual Design + Behavior Spec
 - **Exit criteria**: All tests pass. Coverage meets the threshold declared in `fds.md` frontmatter.
 
 ### Phase 9 — Code Validation 2 — Full Quality Gate
+
 - **Tool**: SonarQube with **Full Quality Gate** profile (static analysis + coverage thresholds).
 - **What it checks**: Everything in Validation 1 plus line/branch coverage.
 - **Rules**:
@@ -119,6 +128,7 @@ FDS + Visual Design + Behavior Spec
 - **Exit criteria**: SonarQube Full Quality Gate passes.
 
 ### Phase 10 — Validation Report
+
 - **Role**: Final compliance matrix confirming every acceptance criterion is satisfied.
 - **Output**: `features/<id>/validation-report.md`
 - **Persistence**: Ephemeral by default. Mark as persistent in `fds.md` frontmatter for compliance-relevant features.
@@ -155,11 +165,11 @@ Frontend Build failure
 
 When a gap or conflict is discovered in the frozen specs during implementation:
 
-| Class | Definition | Response |
-|:--|:--|:--|
-| **Clarification** | Gap always implied by the FDS, just not written explicitly | Document an addendum in-place; no restart required |
-| **Extension** | New requirement not implied by the FDS | New FDS version; restart from Phase 1 |
-| **Contradiction** | Implementation reveals the FDS is internally inconsistent | New FDS version; restart from Phase 1; stakeholder review |
+| Class             | Definition                                                 | Response                                                  |
+| :---------------- | :--------------------------------------------------------- | :-------------------------------------------------------- |
+| **Clarification** | Gap always implied by the FDS, just not written explicitly | Document an addendum in-place; no restart required        |
+| **Extension**     | New requirement not implied by the FDS                     | New FDS version; restart from Phase 1                     |
+| **Contradiction** | Implementation reveals the FDS is internally inconsistent  | New FDS version; restart from Phase 1; stakeholder review |
 
 ---
 
@@ -167,11 +177,11 @@ When a gap or conflict is discovered in the frozen specs during implementation:
 
 Before choosing the workflow depth for a feature, classify it:
 
-| Axis | Score 0 | Score 1 | Score 2 |
-|:--|:--|:--|:--|
-| **Specification stability** | Requirements expected to change | Requirements mostly stable | Fully locked and approved |
+| Axis                          | Score 0                          | Score 1                       | Score 2                                  |
+| :---------------------------- | :------------------------------- | :---------------------------- | :--------------------------------------- |
+| **Specification stability**   | Requirements expected to change  | Requirements mostly stable    | Fully locked and approved                |
 | **UI/API surface complexity** | Single component, no API changes | Multi-component, existing API | New multi-step UI with new API contracts |
-| **Team/agent separation** | Single developer or agent | Two, loosely coordinated | Dedicated frontend + backend roles |
+| **Team/agent separation**     | Single developer or agent        | Two, loosely coordinated      | Dedicated frontend + backend roles       |
 
 - **Score 0–2**: Use simplified two-mode flow (inline tests, no staged phases).
 - **Score 3–4**: Hybrid — adopt Approval Gate + Presentation Contract; keep per-task testing.
@@ -194,6 +204,7 @@ features/<feature-id>/
 ### FDS Frontmatter Requirements
 
 All `fds.md` files MUST declare:
+
 - `id`: Feature identifier (kebab-case)
 - `title`: Human-readable feature name
 - `status`: `active` | `draft` | `archived`
@@ -211,10 +222,10 @@ All `fds.md` files MUST declare:
 
 Two named profiles must be configured before first use:
 
-| Profile | Used In | Coverage Threshold | Other Rules |
-|:--|:--|:--|:--|
-| **Static Analysis Gate** | Code Validation 1 (Phase 7) | Disabled (zero tests exist) | Bugs, vulnerabilities, code smells, complexity, duplication |
-| **Full Quality Gate** | Code Validation 2 (Phase 9) | Enabled (per `coverage_target` in FDS frontmatter) | All Static Analysis Gate rules + coverage |
+| Profile                  | Used In                     | Coverage Threshold                                 | Other Rules                                                 |
+| :----------------------- | :-------------------------- | :------------------------------------------------- | :---------------------------------------------------------- |
+| **Static Analysis Gate** | Code Validation 1 (Phase 7) | Disabled (zero tests exist)                        | Bugs, vulnerabilities, code smells, complexity, duplication |
+| **Full Quality Gate**    | Code Validation 2 (Phase 9) | Enabled (per `coverage_target` in FDS frontmatter) | All Static Analysis Gate rules + coverage                   |
 
 ---
 

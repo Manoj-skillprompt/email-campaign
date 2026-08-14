@@ -6,26 +6,28 @@ This project uses the **Staged Dual-Validation Workflow**. All AI agents must re
 
 ## Workflow Phases & Which Prompt to Use
 
-| Phase | When | System Prompt |
-|:--|:--|:--|
-| **1 — Plan Mode** | Before any code is written | `.ai/prompts/plan-mode.md` |
-| **2 — Developer Approval Gate** | After plan.md is generated | Human reviews & approves plan.md |
-| **3–5 — Build Mode** | After approval; provide PHASE | `.ai/prompts/build-mode.md` + `PHASE=Frontend\|Backend\|Integration` |
-| **6 — UI Review & Freeze** | After Frontend phase | Human approves UI; presentation-contract.md is frozen |
-| **7 — Test Build Mode** | After Integration phase | `.ai/prompts/test-build-mode.md` |
-| **8 — Validation Mode** | After all tests pass | `.ai/prompts/validation-prompt.md` |
+| Phase                           | When                          | System Prompt                                                        |
+| :------------------------------ | :---------------------------- | :------------------------------------------------------------------- |
+| **1 — Plan Mode**               | Before any code is written    | `.ai/prompts/plan-mode.md`                                           |
+| **2 — Developer Approval Gate** | After plan.md is generated    | Human reviews & approves plan.md                                     |
+| **3–5 — Build Mode**            | After approval; provide PHASE | `.ai/prompts/build-mode.md` + `PHASE=Frontend\|Backend\|Integration` |
+| **6 — UI Review & Freeze**      | After Frontend phase          | Human approves UI; presentation-contract.md is frozen                |
+| **7 — Test Build Mode**         | After Integration phase       | `.ai/prompts/test-build-mode.md`                                     |
+| **8 — Validation Mode**         | After all tests pass          | `.ai/prompts/validation-prompt.md`                                   |
 
 ---
 
 ## How to Invoke Each Mode
 
 ### Plan Mode
+
 ```
 System prompt : .ai/prompts/plan-mode.md
 User message  : Feature ID = contacts
 ```
 
 ### Build Mode
+
 ```
 System prompt : .ai/prompts/build-mode.md
 User message  : Feature ID = contacts
@@ -33,12 +35,14 @@ User message  : Feature ID = contacts
 ```
 
 ### Test Build Mode
+
 ```
 System prompt : .ai/prompts/test-build-mode.md
 User message  : Feature = contacts
 ```
 
 ### Validation Mode
+
 ```
 System prompt : .ai/prompts/validation-prompt.md
 User message  : Feature = contacts
@@ -48,12 +52,12 @@ User message  : Feature = contacts
 
 ## Project Rules (read before any task)
 
-| Rule File | Contents |
-|:--|:--|
-| `rules/workflow.md` | Full 10-phase workflow with rollback decision tree |
+| Rule File               | Contents                                                    |
+| :---------------------- | :---------------------------------------------------------- |
+| `rules/workflow.md`     | Full 10-phase workflow with rollback decision tree          |
 | `rules/architecture.md` | Layer rules: Presentation → Service → Repository → Database |
-| `rules/conventions.md` | Naming, formatting, function design |
-| `rules/tech-stack.md` | Approved libraries and frameworks only |
+| `rules/conventions.md`  | Naming, formatting, function design                         |
+| `rules/tech-stack.md`   | Approved libraries and frameworks only                      |
 
 ---
 
@@ -75,8 +79,8 @@ features/
 
 ### Active Features
 
-| Feature | FDS | Status |
-|:--|:--|:--|
+| Feature    | FDS                        | Status                      |
+| :--------- | :------------------------- | :-------------------------- |
 | `contacts` | `features/contacts/fds.md` | active — awaiting Plan Mode |
 
 ---
