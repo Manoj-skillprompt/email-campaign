@@ -74,7 +74,7 @@ export function ContactFormModal({
           <DialogTitle>{mode === "create" ? "Add Contact" : "Edit Contact"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(handleValidSubmit)} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit(handleValidSubmit)} noValidate className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="contact-name">Name</Label>
             <Input id="contact-name" aria-invalid={!!errors.name} {...register("name")} />
