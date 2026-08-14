@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project": "email-campaign-v2",
+  "last_updated": "2026-08-14",
+  "active_features": {},
+  "archived_features": {}
+}
