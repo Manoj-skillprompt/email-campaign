@@ -4,7 +4,7 @@
 
 - Opening the Contacts page displays all contacts.
 - Supports case-insensitive searching by Name, Email, or Branch.
-- When no contacts match the search, an empty state is displayed with primary action to add a contact.
+- When no contacts match the search, an empty state is displayed with a primary action to add a contact.
 
 ## Create Contact
 
@@ -23,5 +23,5 @@
 ## Delete Contact
 
 - Selecting Delete opens a confirmation dialog warning of permanent removal.
-- Confirmation permanently removes contact, removes contact from all groups, and displays a success notification.
+- Confirmation permanently removes the contact and displays a success notification.
 - Cancelling performs no action.
