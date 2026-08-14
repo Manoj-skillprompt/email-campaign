@@ -2,6 +2,20 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "project": "email-campaign-v2",
   "last_updated": "2026-08-14",
-  "active_features": {},
+  "active_features": {
+    "contacts": {
+      "id": "contacts",
+      "title": "Contacts Management",
+      "domain": "contacts",
+      "status": "active",
+      "version": "1.2.0",
+      "path": "features/contacts/fds.md",
+      "behavior_spec": "features/contacts/behavior.md",
+      "figma_spec": "features/contacts/visuals/figma.md",
+      "visual_spec": "features/contacts/visuals/visual-spec.md",
+      "owner": "contacts-team",
+      "dependencies": []
+    }
+  },
   "archived_features": {}
 }
