@@ -69,6 +69,7 @@ export const contactsContract = c.router({
     method: "DELETE",
     path: "/contacts/:id",
     pathParams: z.object({ id: z.string() }),
+    body: c.noBody(),
     responses: {
       204: c.noBody(),
       404: errorResponseSchema,

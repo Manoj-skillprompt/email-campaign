@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -9,9 +10,12 @@ import { ContactSearch } from "@/components/contacts/contact-search";
 import { ContactTable } from "@/components/contacts/contact-table";
 import { ContactsEmptyState } from "@/components/contacts/contacts-empty-state";
 import { DeleteContactDialog } from "@/components/contacts/delete-contact-dialog";
-import { INITIAL_MOCK_CONTACTS } from "@/lib/mock-contacts";
+import { apiClient } from "@/lib/api-client";
+import { toContactFieldError } from "@/lib/contact-form-errors";
 import type { ContactFormValues } from "@/lib/validation/contact-schema";
 import type { Contact } from "@/types/contact";
+
+const CONTACTS_QUERY_KEY = ["contacts"];
 
 function matchesSearch(contact: Contact, term: string): boolean {
   const normalized = term.trim().toLowerCase();
@@ -23,16 +27,22 @@ function matchesSearch(contact: Contact, term: string): boolean {
   );
 }
 
-function generateClientId(): string {
-  return `LOCAL-${crypto.randomUUID().slice(0, 6)}`;
-}
-
 export default function ContactsPage() {
   const { showToast } = useToast();
-  const [contacts, setContacts] = useState<Contact[]>(INITIAL_MOCK_CONTACTS);
+  const queryClient = useQueryClient();
+
+  const { data: contactsResponse, isLoading } = apiClient.listContacts.useQuery(CONTACTS_QUERY_KEY, {
+    query: {},
+  });
+  const contacts = useMemo(() => contactsResponse?.body ?? [], [contactsResponse]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [formModal, setFormModal] = useState<{ mode: "create" | "edit"; contact?: Contact } | null>(null);
   const [contactPendingDelete, setContactPendingDelete] = useState<Contact | null>(null);
+
+  const createMutation = apiClient.createContact.useMutation();
+  const updateMutation = apiClient.updateContact.useMutation();
+  const deleteMutation = apiClient.deleteContact.useMutation();
 
   const filteredContacts = useMemo(
     () => contacts.filter((contact) => matchesSearch(contact, searchTerm)),
@@ -49,33 +59,33 @@ export default function ContactsPage() {
     [contacts, formModal]
   );
 
-  const handleFormSubmit = (values: ContactFormValues) => {
-    const now = new Date().toISOString();
+  const invalidateContacts = () => queryClient.invalidateQueries({ queryKey: CONTACTS_QUERY_KEY });
 
-    if (formModal?.mode === "edit" && formModal.contact) {
-      const editedId = formModal.contact.id;
-      setContacts((current) =>
-        current.map((contact) => (contact.id === editedId ? { ...contact, ...values, updatedAt: now } : contact))
-      );
-      showToast("Contact updated successfully.");
-      return;
+  const handleFormSubmit = async (values: ContactFormValues) => {
+    try {
+      if (formModal?.mode === "edit" && formModal.contact) {
+        await updateMutation.mutateAsync({ params: { id: formModal.contact.id }, body: values });
+        showToast("Contact updated successfully.");
+      } else {
+        await createMutation.mutateAsync({ body: values });
+        showToast("Contact created successfully.");
+      }
+      await invalidateContacts();
+    } catch (error) {
+      throw toContactFieldError(error);
     }
-
-    const newContact: Contact = {
-      id: crypto.randomUUID(),
-      clientId: generateClientId(),
-      ...values,
-      createdAt: now,
-      updatedAt: now,
-    };
-    setContacts((current) => [newContact, ...current]);
-    showToast("Contact created successfully.");
   };
 
-  const handleDeleteConfirm = (contact: Contact) => {
-    setContacts((current) => current.filter((entry) => entry.id !== contact.id));
-    setContactPendingDelete(null);
-    showToast("Contact deleted successfully.");
+  const handleDeleteConfirm = async (contact: Contact) => {
+    try {
+      await deleteMutation.mutateAsync({ params: { id: contact.id } });
+      setContactPendingDelete(null);
+      await invalidateContacts();
+      showToast("Contact deleted successfully.");
+    } catch {
+      setContactPendingDelete(null);
+      showToast("Could not delete this contact. Please try again.", "error");
+    }
   };
 
   return (
@@ -96,7 +106,9 @@ export default function ContactsPage() {
           <ContactSearch value={searchTerm} onChange={setSearchTerm} />
         </div>
 
-        {filteredContacts.length > 0 ? (
+        {isLoading ? (
+          <p className="py-16 text-center text-sm text-foreground-muted">Loading contacts...</p>
+        ) : filteredContacts.length > 0 ? (
           <ContactTable
             contacts={filteredContacts}
             onEdit={(contact) => setFormModal({ mode: "edit", contact })}

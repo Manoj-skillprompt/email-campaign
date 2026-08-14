@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ContactFieldError } from "@/lib/contact-form-errors";
 import { buildContactFormSchema, type ContactFormValues } from "@/lib/validation/contact-schema";
 import type { Contact } from "@/types/contact";
 
@@ -17,7 +18,7 @@ interface ContactFormModalProps {
   mode: "create" | "edit";
   contact?: Contact;
   existingEmails: Set<string>;
-  onSubmit: (values: ContactFormValues) => void;
+  onSubmit: (values: ContactFormValues) => Promise<void>;
 }
 
 export function ContactFormModal({
@@ -32,7 +33,8 @@ export function ContactFormModal({
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    setError,
+    formState: { errors, isSubmitting },
   } = useForm<ContactFormValues>({
     resolver: zodResolver(buildContactFormSchema(existingEmails, contact?.email)),
     defaultValues: {
@@ -52,9 +54,17 @@ export function ContactFormModal({
     }
   }, [open, contact, reset]);
 
-  const handleValidSubmit = (values: ContactFormValues) => {
-    onSubmit(values);
-    onOpenChange(false);
+  const handleValidSubmit = async (values: ContactFormValues) => {
+    try {
+      await onSubmit(values);
+      onOpenChange(false);
+    } catch (error) {
+      if (error instanceof ContactFieldError) {
+        setError(error.field, { type: "server", message: error.message });
+        return;
+      }
+      throw error;
+    }
   };
 
   return (
@@ -87,7 +97,9 @@ export function ContactFormModal({
             <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              Save
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
