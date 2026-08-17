@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "project": "email-campaign-v2",
-  "last_updated": "2026-08-14",
+  "last_updated": "2026-08-17",
   "active_features": {
     "contacts": {
       "id": "contacts",
@@ -14,6 +14,18 @@
       "figma_spec": "features/contacts/visuals/figma.md",
       "owner": "contacts-team",
       "dependencies": []
+    },
+    "groups": {
+      "id": "groups",
+      "title": "Groups Management",
+      "domain": "groups",
+      "status": "active",
+      "version": "1.0.0",
+      "path": "features/groups/fds.md",
+      "behavior_spec": "features/groups/behavior.md",
+      "figma_spec": "features/groups/visuals/figma.md",
+      "owner": "groups-team",
+      "dependencies": ["contacts"]
     }
   },
   "archived_features": {}
