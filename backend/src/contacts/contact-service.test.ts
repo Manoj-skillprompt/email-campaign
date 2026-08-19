@@ -22,6 +22,9 @@ function createFakeRepository(seed: Contact[] = []): ContactRepository {
     async findById(id: string) {
       return rows.find((row) => row.id === id);
     },
+    async findByIds(ids: string[]) {
+      return rows.filter((row) => ids.includes(row.id));
+    },
     async findByEmail(email: string, excludeId?: string) {
       return rows.find((row) => row.email.toLowerCase() === email.toLowerCase() && row.id !== excludeId);
     },

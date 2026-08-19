@@ -24,6 +24,19 @@ sqlite.exec(`
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS groups (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS group_contacts (
+    group_id TEXT NOT NULL REFERENCES groups(id),
+    contact_id TEXT NOT NULL REFERENCES contacts(id),
+    UNIQUE(group_id, contact_id)
+  );
 `);
 
 export const db = drizzle(sqlite, { schema });

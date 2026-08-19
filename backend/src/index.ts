@@ -1,8 +1,9 @@
-import { contactsContract } from "@email-campaign-v2/contracts";
+import { contactsContract, groupsContract } from "@email-campaign-v2/contracts";
 import { createExpressEndpoints } from "@ts-rest/express";
 import express from "express";
 
 import { contactRouter } from "./contacts/contact-router";
+import { groupRouter } from "./groups/group-router";
 
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? "http://localhost:3000";
 
@@ -21,6 +22,7 @@ app.use((req, res, next) => {
 });
 
 createExpressEndpoints(contactsContract, contactRouter, app);
+createExpressEndpoints(groupsContract, groupRouter, app);
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
 

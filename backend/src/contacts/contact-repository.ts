@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import type { Contact } from "@email-campaign-v2/contracts";
 
 import { db } from "../db/client";
@@ -26,6 +26,11 @@ export class ContactRepository {
   async findById(id: string): Promise<Contact | undefined> {
     const [row] = await db.select().from(contacts).where(eq(contacts.id, id));
     return row;
+  }
+
+  async findByIds(ids: string[]): Promise<Contact[]> {
+    if (ids.length === 0) return [];
+    return db.select().from(contacts).where(inArray(contacts.id, ids));
   }
 
   async findByEmail(email: string, excludeId?: string): Promise<Contact | undefined> {
