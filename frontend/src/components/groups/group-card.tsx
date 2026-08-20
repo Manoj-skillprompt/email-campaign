@@ -77,6 +77,7 @@ export function GroupCard({ group, members, onManage, onDelete }: GroupCardProps
 
         <button
           type="button"
+          aria-label={`Manage ${group.name}`}
           onClick={() => onManage(group)}
           className="flex items-center gap-1.5 rounded-md bg-background px-4 py-2 text-sm font-medium text-foreground-muted hover:bg-border"
         >

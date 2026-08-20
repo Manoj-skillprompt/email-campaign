@@ -6,7 +6,7 @@ Replace `[[FEATURE]]` with the actual feature name (e.g. `contacts`, `groups`, `
 
 ---
 
-## 🗺️ Workflow Lifecycle at a Glance
+## Workflow Lifecycle at a Glance
 
 ```
 1. Plan Mode ───────────► 2. Developer Approval Gate (Commit Plan)
@@ -29,9 +29,9 @@ Replace `[[FEATURE]]` with the actual feature name (e.g. `contacts`, `groups`, `
 
 ---
 
-## 📌 Phase 1: Plan Mode (Read-Only Planning)
+## Phase 1: Plan Mode (Read-Only Planning)
 
-### 💬 Claude Code Prompt
+### Claude Code Prompt
 
 - **System Prompt**:
   ```text
@@ -42,7 +42,7 @@ Replace `[[FEATURE]]` with the actual feature name (e.g. `contacts`, `groups`, `
   Feature ID = [[FEATURE]]
   ```
 
-### 🎯 What Happens:
+### What Happens:
 
 - Agent inspects `features/[[FEATURE]]/fds.md`, `behavior.md`, `figma.md`, and `rules/`.
 - Detects scenario (A: New Standalone, B: Spec Update, C: Cross-Feature Dependency).
@@ -50,14 +50,14 @@ Replace `[[FEATURE]]` with the actual feature name (e.g. `contacts`, `groups`, `
 
 ---
 
-## 🛑 Phase 2: Developer Approval Gate
+## Phase 2: Developer Approval Gate
 
-### 📋 Action:
+### Action:
 
 1. Review `features/[[FEATURE]]/plan.md`.
 2. Ensure task breakdown, layering, and test tasks are complete and accurate.
 
-### 💾 Commit:
+### Commit:
 
 ```bash
 git add -A && git commit -m "docs([[FEATURE]]): add approved implementation plan"
@@ -65,9 +65,9 @@ git add -A && git commit -m "docs([[FEATURE]]): add approved implementation plan
 
 ---
 
-## 📌 Phase 3: Frontend Build Mode (Mock UI)
+## Phase 3: Frontend Build Mode (Mock UI)
 
-### 💬 Claude Code Prompt
+### Claude Code Prompt
 
 - **System Prompt**:
   ```text
@@ -79,22 +79,22 @@ git add -A && git commit -m "docs([[FEATURE]]): add approved implementation plan
   Phase = Frontend
   ```
 
-### 🎯 What Happens:
+### What Happens:
 
 - Agent builds frontend UI matching Figma specs using mock data.
 - Generates draft `features/[[FEATURE]]/presentation-contract.md`.
 
 ---
 
-## 🛑 Phase 4: UI Review & Freeze
+## Phase 4: UI Review & Freeze
 
-### 📋 Action:
+### Action:
 
 1. Run `pnpm dev` and visit `http://localhost:3000/[[FEATURE]]`.
 2. Verify visual layout, modals, empty states, and forms.
 3. Review `features/[[FEATURE]]/presentation-contract.md`.
 
-### 💾 Commit:
+### Commit:
 
 ```bash
 pnpm format
@@ -103,9 +103,9 @@ git add -A && git commit -m "feat([[FEATURE]]): frontend build complete and pres
 
 ---
 
-## 📌 Phase 5: Backend Build Mode
+## Phase 5: Backend Build Mode
 
-### 💬 Claude Code Prompt
+### Claude Code Prompt
 
 - **System Prompt**:
   ```text
@@ -117,11 +117,11 @@ git add -A && git commit -m "feat([[FEATURE]]): frontend build complete and pres
   Phase = Backend
   ```
 
-### 🎯 What Happens:
+### What Happens:
 
 - Agent implements `packages/contracts`, Drizzle DB schema/join tables, Repository, Service, and Express Router to satisfy the frozen `presentation-contract.md`.
 
-### 💾 Commit:
+### Commit:
 
 ```bash
 pnpm format
@@ -130,9 +130,9 @@ git add -A && git commit -m "feat([[FEATURE]]): backend build complete"
 
 ---
 
-## 📌 Phase 6: Integration Build Mode
+## Phase 6: Integration Build Mode
 
-### 💬 Claude Code Prompt
+### Claude Code Prompt
 
 - **System Prompt**:
   ```text
@@ -144,13 +144,13 @@ git add -A && git commit -m "feat([[FEATURE]]): backend build complete"
   Phase = Integration
   ```
 
-### 🎯 What Happens:
+### What Happens:
 
 - Agent connects frontend to real backend API via TanStack Query and `ts-rest` client.
 - Wires form submission, mutations, and error mappings.
 - Completely deletes mock data files from production paths.
 
-### 💾 Commit:
+### Commit:
 
 ```bash
 pnpm format
@@ -159,9 +159,9 @@ git add -A && git commit -m "feat([[FEATURE]]): integration build complete"
 
 ---
 
-## 📌 Phase 7: Test Build Mode (Spec-Driven Testing)
+## Phase 7: Test Build Mode (Spec-Driven Testing)
 
-### 💬 Claude Code Prompt
+### Claude Code Prompt
 
 - **System Prompt**:
   ```text
@@ -172,12 +172,12 @@ git add -A && git commit -m "feat([[FEATURE]]): integration build complete"
   Feature = [[FEATURE]]
   ```
 
-### 🎯 What Happens:
+### What Happens:
 
 - Agent writes all Unit, API Integration, Component, E2E, and Regression tests listed in `plan.md`.
 - Fixes genuine production defects if surfaced by spec tests (documented as notes).
 
-### 💾 Commit:
+### Commit:
 
 ```bash
 pnpm format
@@ -186,9 +186,9 @@ git add -A && git commit -m "test([[FEATURE]]): test build complete"
 
 ---
 
-## 📌 Phase 8: Validation Mode (Final Audit)
+## Phase 8: Validation Mode (Final Audit)
 
-### 💬 Claude Code Prompt
+### Claude Code Prompt
 
 - **System Prompt**:
   ```text
@@ -199,11 +199,11 @@ git add -A && git commit -m "test([[FEATURE]]): test build complete"
   Feature = [[FEATURE]]
   ```
 
-### 🎯 What Happens:
+### What Happens:
 
 - Agent runs all tests, verifies FDS criteria, checks architecture compliance, and produces `features/[[FEATURE]]/validation-report.md`.
 
-### 💾 Commit:
+### Commit:
 
 ```bash
 pnpm format
