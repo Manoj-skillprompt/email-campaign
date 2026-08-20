@@ -78,9 +78,9 @@ features/
 
 ### Active Features
 
-| Feature                               | FDS | Status |
-| :------------------------------------ | :-- | :----- |
-| (Registered in `features/index.json`) |     |        |
+| Feature    | FDS                        | Status                      |
+| :--------- | :------------------------- | :-------------------------- |
+| `contacts` | `features/contacts/fds.md` | active — awaiting Plan Mode |
 
 ---
 
