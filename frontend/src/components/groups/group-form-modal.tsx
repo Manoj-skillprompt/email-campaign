@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { GroupFieldError } from "@/lib/group-form-errors";
 import { buildGroupFormSchema, type GroupFormValues } from "@/lib/validation/group-schema";
 import type { Contact } from "@/types/contact";
 import type { Group } from "@/types/group";
@@ -47,6 +48,7 @@ export function GroupFormModal({
     reset,
     watch,
     setValue,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<GroupFormValues>({
     resolver: zodResolver(buildGroupFormSchema(existingNames, group?.name)),
@@ -82,8 +84,16 @@ export function GroupFormModal({
   const visibleContacts = allContacts.filter((contact) => matchesContactSearch(contact, contactSearch));
 
   const handleValidSubmit = async (values: GroupFormValues) => {
-    await onSubmit(values);
-    onOpenChange(false);
+    try {
+      await onSubmit(values);
+      onOpenChange(false);
+    } catch (error) {
+      if (error instanceof GroupFieldError) {
+        setError(error.field, { type: "server", message: error.message });
+        return;
+      }
+      throw error;
+    }
   };
 
   return (

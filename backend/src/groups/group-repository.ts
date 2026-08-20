@@ -89,4 +89,12 @@ export class GroupRepository {
       .where(eq(groupContacts.groupId, groupId));
     return row?.count ?? 0;
   }
+
+  async findContactIds(groupId: string): Promise<string[]> {
+    const rows = await db
+      .select({ contactId: groupContacts.contactId })
+      .from(groupContacts)
+      .where(eq(groupContacts.groupId, groupId));
+    return rows.map((row) => row.contactId);
+  }
 }

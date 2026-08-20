@@ -75,6 +75,9 @@ function createFakeGroupRepository(seed: GroupRow[] = []): GroupRepository {
     async countContacts(groupId: string) {
       return membership.get(groupId)?.size ?? 0;
     },
+    async findContactIds(groupId: string) {
+      return [...(membership.get(groupId) ?? new Set())];
+    },
   } as unknown as GroupRepository;
 }
 
@@ -147,6 +150,7 @@ describe("GroupService.updateGroup (T4)", () => {
     const updated = await service.updateGroup("g1", { removeContactIds: ["c1"] });
 
     expect(updated.contactCount).toBe(1);
+    expect(updated.contactIds).toEqual(["c2"]);
   });
 
   it("rejects unknown addContactIds", async () => {

@@ -130,7 +130,23 @@ reproduced pixel-for-pixel; the multi-select uses a searchable checklist (native
 consistent with `rules/tech-stack.md` (no new drag-and-drop dependency) and with how the FDS
 describes selection ("select zero or more contacts") rather than drag-and-drop assignment.
 
-## 6. Visual Fidelity Notes
+## 6. Integration Build Mode Amendment — `contactIds` on `Group`
+
+Wiring the real backend (plan tasks I3, I5) surfaced a gap not caught during Backend Build Mode:
+the frozen `groupSchema` (plan task B1) exposed only `contactCount`, never the member contact ids
+themselves. Without that, the edit-mode `GroupFormModal` cannot be pre-populated with current
+members (F11), the `updateGroup` add/remove diff (I3) cannot be computed, and `GroupGrid`'s member
+avatar stack (§4) has no real data source — all of which are required, already-approved behavior
+from the Frontend build.
+
+**Resolution**: `groupSchema` (`packages/contracts/src/groups.ts`) gained a `contactIds: string[]`
+field alongside `contactCount`, populated by a new `GroupRepository.findContactIds` read (backend
+`group-service.ts`/`group-repository.ts`). This is additive only — no existing field, endpoint,
+request shape, or business rule changed; `contactCount` continues to be computed the same way (plan
+§3 clarification). Frontend `Group` (`frontend/src/types/group.ts`) now re-exports the contract
+type directly instead of the mock-phase local interface (plan task I7).
+
+## 7. Visual Fidelity Notes
 
 Implemented against Figma node `14:2`
 (`https://www.figma.com/design/wXSz455HWRiP6veaCxaTBG/email-campaign?node-id=14-2`): page header,

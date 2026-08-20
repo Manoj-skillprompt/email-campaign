@@ -100,7 +100,10 @@ export class GroupService {
   }
 
   private async toGroup(row: GroupRow): Promise<Group> {
-    const contactCount = await this.groupRepository.countContacts(row.id);
-    return { ...row, contactCount };
+    const [contactCount, contactIds] = await Promise.all([
+      this.groupRepository.countContacts(row.id),
+      this.groupRepository.findContactIds(row.id),
+    ]);
+    return { ...row, contactCount, contactIds };
   }
 }

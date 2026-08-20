@@ -9,6 +9,7 @@ export const groupSchema = z.object({
   id: z.string(),
   name: z.string(),
   contactCount: z.number().int().nonnegative(),
+  contactIds: z.array(z.string()),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

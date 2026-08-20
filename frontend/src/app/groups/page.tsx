@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -9,10 +10,14 @@ import { GroupFormModal } from "@/components/groups/group-form-modal";
 import { GroupGrid } from "@/components/groups/group-grid";
 import { GroupSearch } from "@/components/groups/group-search";
 import { GroupsEmptyState } from "@/components/groups/groups-empty-state";
-import { initialGroupMembership, initialGroupSeeds, mockContacts, type MockGroupSeed } from "@/lib/mock-groups";
+import { apiClient, groupsApiClient } from "@/lib/api-client";
+import { toGroupFieldError } from "@/lib/group-form-errors";
 import type { GroupFormValues } from "@/lib/validation/group-schema";
 import type { Contact } from "@/types/contact";
 import type { Group } from "@/types/group";
+
+const GROUPS_QUERY_KEY = ["groups"];
+const CONTACTS_QUERY_KEY = ["contacts"];
 
 function matchesSearch(group: Group, term: string): boolean {
   const normalized = term.trim().toLowerCase();
@@ -20,29 +25,23 @@ function matchesSearch(group: Group, term: string): boolean {
   return group.name.toLowerCase().includes(normalized);
 }
 
-function toGroup(seed: MockGroupSeed, memberIds: string[]): Group {
-  return {
-    id: seed.id,
-    name: seed.name,
-    createdAt: seed.createdAt,
-    updatedAt: seed.updatedAt,
-    contactCount: memberIds.length,
-  };
-}
-
 export default function GroupsPage() {
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
 
-  const [groupSeeds, setGroupSeeds] = useState<MockGroupSeed[]>(initialGroupSeeds);
-  const [membership, setMembership] = useState<Record<string, string[]>>(initialGroupMembership);
+  const { data: groupsResponse, isLoading } = groupsApiClient.getGroups.useQuery(GROUPS_QUERY_KEY, { query: {} });
+  const groups = useMemo(() => groupsResponse?.body ?? [], [groupsResponse]);
+
+  const { data: contactsResponse } = apiClient.listContacts.useQuery(CONTACTS_QUERY_KEY, { query: {} });
+  const contacts = useMemo(() => contactsResponse?.body ?? [], [contactsResponse]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [formModal, setFormModal] = useState<{ mode: "create" | "edit"; group?: Group } | null>(null);
   const [groupPendingDelete, setGroupPendingDelete] = useState<Group | null>(null);
 
-  const groups = useMemo(
-    () => groupSeeds.map((seed) => toGroup(seed, membership[seed.id] ?? [])),
-    [groupSeeds, membership]
-  );
+  const createMutation = groupsApiClient.createGroup.useMutation();
+  const updateMutation = groupsApiClient.updateGroup.useMutation();
+  const deleteMutation = groupsApiClient.deleteGroup.useMutation();
 
   const filteredGroups = useMemo(
     () => groups.filter((group) => matchesSearch(group, searchTerm)),
@@ -50,51 +49,57 @@ export default function GroupsPage() {
   );
 
   const membersByGroupId = useMemo(() => {
-    const contactsById = new Map(mockContacts.map((contact) => [contact.id, contact]));
+    const contactsById = new Map(contacts.map((contact) => [contact.id, contact]));
     const result: Record<string, Contact[]> = {};
     for (const group of groups) {
-      result[group.id] = (membership[group.id] ?? []).flatMap((id) => {
+      result[group.id] = group.contactIds.flatMap((id) => {
         const contact = contactsById.get(id);
         return contact ? [contact] : [];
       });
     }
     return result;
-  }, [groups, membership]);
+  }, [groups, contacts]);
 
   const existingNames = useMemo(
     () => new Set(groups.filter((group) => group.id !== formModal?.group?.id).map((group) => group.name.toLowerCase())),
     [groups, formModal]
   );
 
-  const currentMemberIds = formModal?.group ? (membership[formModal.group.id] ?? []) : [];
+  const currentMemberIds = formModal?.group ? formModal.group.contactIds : [];
+
+  const invalidateGroups = () => queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
 
   const handleFormSubmit = async (values: GroupFormValues) => {
-    const now = new Date().toISOString();
-
-    if (formModal?.mode === "edit" && formModal.group) {
-      const groupId = formModal.group.id;
-      setGroupSeeds((seeds) =>
-        seeds.map((seed) => (seed.id === groupId ? { ...seed, name: values.name, updatedAt: now } : seed))
-      );
-      setMembership((current) => ({ ...current, [groupId]: values.contactIds }));
-      showToast("Group updated successfully.");
-    } else {
-      const newId = crypto.randomUUID();
-      setGroupSeeds((seeds) => [...seeds, { id: newId, name: values.name, createdAt: now, updatedAt: now }]);
-      setMembership((current) => ({ ...current, [newId]: values.contactIds }));
-      showToast("Group created successfully.");
+    try {
+      if (formModal?.mode === "edit" && formModal.group) {
+        const currentIds = formModal.group.contactIds;
+        const addContactIds = values.contactIds.filter((id) => !currentIds.includes(id));
+        const removeContactIds = currentIds.filter((id) => !values.contactIds.includes(id));
+        await updateMutation.mutateAsync({
+          params: { id: formModal.group.id },
+          body: { name: values.name, addContactIds, removeContactIds },
+        });
+        showToast("Group updated successfully.");
+      } else {
+        await createMutation.mutateAsync({ body: { name: values.name, contactIds: values.contactIds } });
+        showToast("Group created successfully.");
+      }
+      await invalidateGroups();
+    } catch (error) {
+      throw toGroupFieldError(error);
     }
   };
 
-  const handleDeleteConfirm = (group: Group) => {
-    setGroupSeeds((seeds) => seeds.filter((seed) => seed.id !== group.id));
-    setMembership((current) => {
-      const next = { ...current };
-      delete next[group.id];
-      return next;
-    });
-    setGroupPendingDelete(null);
-    showToast("Group deleted successfully.");
+  const handleDeleteConfirm = async (group: Group) => {
+    try {
+      await deleteMutation.mutateAsync({ params: { id: group.id } });
+      setGroupPendingDelete(null);
+      await invalidateGroups();
+      showToast("Group deleted successfully.");
+    } catch {
+      setGroupPendingDelete(null);
+      showToast("Could not delete this group. Please try again.", "error");
+    }
   };
 
   return (
@@ -112,7 +117,9 @@ export default function GroupsPage() {
           <GroupSearch value={searchTerm} onChange={setSearchTerm} />
         </div>
 
-        {filteredGroups.length > 0 ? (
+        {isLoading ? (
+          <p className="py-16 text-center text-sm text-foreground-muted">Loading groups...</p>
+        ) : filteredGroups.length > 0 ? (
           <GroupGrid
             groups={filteredGroups}
             membersByGroupId={membersByGroupId}
@@ -132,7 +139,7 @@ export default function GroupsPage() {
         mode={formModal?.mode ?? "create"}
         group={formModal?.group}
         currentMemberIds={currentMemberIds}
-        allContacts={mockContacts}
+        allContacts={contacts}
         existingNames={existingNames}
         onSubmit={handleFormSubmit}
       />
