@@ -2,6 +2,14 @@ import { campaignsContract, contactsContract, groupsContract } from "@email-camp
 import { createExpressEndpoints } from "@ts-rest/express";
 import express from "express";
 
+if (typeof process.loadEnvFile === "function") {
+  try {
+    process.loadEnvFile();
+  } catch {
+    // .env file is optional
+  }
+}
+
 import { campaignRouter } from "./campaigns/campaign-router";
 import { CampaignScheduler } from "./campaigns/campaign-scheduler";
 import { contactRouter } from "./contacts/contact-router";
