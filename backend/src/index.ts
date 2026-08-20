@@ -1,7 +1,4 @@
-import { campaignsContract, contactsContract, groupsContract } from "@email-campaign-v2/contracts";
-import { createExpressEndpoints } from "@ts-rest/express";
 import express from "express";
-
 import path from "node:path";
 
 if (typeof process.loadEnvFile === "function") {
@@ -20,11 +17,6 @@ if (typeof process.loadEnvFile === "function") {
   }
 }
 
-import { campaignRouter } from "./campaigns/campaign-router";
-import { CampaignScheduler } from "./campaigns/campaign-scheduler";
-import { contactRouter } from "./contacts/contact-router";
-import { groupRouter } from "./groups/group-router";
-
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? "http://localhost:3000";
 
 const app = express();
@@ -41,15 +33,12 @@ app.use((req, res, next) => {
   next();
 });
 
-createExpressEndpoints(contactsContract, contactRouter, app);
-createExpressEndpoints(groupsContract, groupRouter, app);
-createExpressEndpoints(campaignsContract, campaignRouter, app);
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
 
 app.listen(PORT, () => {
   console.log(`Backend listening on port ${PORT}`);
 });
-
-const campaignScheduler = new CampaignScheduler();
-campaignScheduler.start();

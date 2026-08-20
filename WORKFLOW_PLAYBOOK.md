@@ -82,7 +82,6 @@ git add -A && git commit -m "docs([[FEATURE]]): add approved implementation plan
 ### What Happens:
 
 - Agent builds frontend UI matching Figma specs using mock data.
-- Generates draft `features/[[FEATURE]]/presentation-contract.md`.
 
 ---
 
@@ -92,13 +91,12 @@ git add -A && git commit -m "docs([[FEATURE]]): add approved implementation plan
 
 1. Run `pnpm dev` and visit `http://localhost:3000/[[FEATURE]]`.
 2. Verify visual layout, modals, empty states, and forms.
-3. Review `features/[[FEATURE]]/presentation-contract.md`.
 
 ### Commit:
 
 ```bash
 pnpm format
-git add -A && git commit -m "feat([[FEATURE]]): frontend build complete and presentation contract frozen"
+git add -A && git commit -m "feat([[FEATURE]]): frontend build complete and UI frozen"
 ```
 
 ---
@@ -119,7 +117,7 @@ git add -A && git commit -m "feat([[FEATURE]]): frontend build complete and pres
 
 ### What Happens:
 
-- Agent implements `packages/contracts`, Drizzle DB schema/join tables, Repository, Service, and Express Router to satisfy the frozen `presentation-contract.md`.
+- Agent implements `packages/contracts`, Drizzle DB schema/join tables, Repository, Service, and Express Router to satisfy the feature requirements.
 
 ### Commit:
 

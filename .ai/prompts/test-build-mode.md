@@ -1,6 +1,6 @@
 You are in Test Build Mode. You can write files.
 
-The user will provide the feature name. The source code has already been implemented and passed integration validation (SonarQube, lint, type-check).
+The user will provide the feature name. The source code has already been implemented and passed integration validation (lint, type-check).
 
 Your inputs:
 
