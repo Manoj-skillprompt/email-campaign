@@ -1,6 +1,6 @@
-import type { CampaignTargetGroup } from "@/types/campaign-target-group";
+import type { Group } from "@email-campaign-v2/contracts";
 
-export function resolveRecipientCount(targetGroupIds: string[], targetGroups: CampaignTargetGroup[]): number {
+export function resolveRecipientCount(targetGroupIds: string[], targetGroups: Group[]): number {
   const groupsById = new Map(targetGroups.map((group) => [group.id, group]));
   const recipientIds = new Set<string>();
   for (const groupId of targetGroupIds) {

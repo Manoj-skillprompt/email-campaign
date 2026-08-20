@@ -1,5 +1,7 @@
 "use client";
 
+import type { Group } from "@email-campaign-v2/contracts";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,13 +12,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { resolveRecipientCount } from "@/lib/campaign-recipients";
-import type { CampaignTargetGroup } from "@/types/campaign-target-group";
 
 interface SendNowDialogProps {
   open: boolean;
   campaignName: string;
   targetGroupIds: string[];
-  targetGroups: CampaignTargetGroup[];
+  targetGroups: Group[];
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
 }

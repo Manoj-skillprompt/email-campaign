@@ -168,7 +168,49 @@ instruction that Frontend Build Mode must confirm structure against the real pul
   field is implemented as a plain `<textarea>`, consistent with "No new libraries without explicit
   approval."
 
-## 6. Visual Fidelity Notes
+## 6. Integration Build Mode Amendment — real data sources replace mocks
+
+Wiring the real backend (plan tasks I1–I10) replaced every mock data source documented above with
+the corresponding ts-rest client call, without changing any documented component prop, behavior, or
+business rule:
+
+- **`CampaignTargetGroup` retired (I8)**: the mock-only companion type (§1) has been deleted along
+  with `frontend/src/types/campaign-target-group.ts`. `CampaignTable`, `CampaignDetailView`,
+  `CampaignEditorModal`, and `SendNowDialog` now accept the real `Group` type from
+  `@email-campaign-v2/contracts` (a superset of the old mock shape — `id`, `name`, `contactIds`, plus
+  `contactCount`/timestamps unused by these components), sourced from a single
+  `groupsApiClient.getGroups.useQuery` call in `frontend/src/app/campaigns/page.tsx`, shared across
+  the list, editor, detail view, and Send Now preview. `resolveRecipientCount`
+  (`frontend/src/lib/campaign-recipients.ts`) is unchanged in logic, only its parameter type moved
+  from `CampaignTargetGroup[]` to `Group[]`.
+- **"Fresh" recipient-count preview (I6, plan §3 clarification 7)**: rather than adding a dedicated
+  refetch prop to the frozen `SendNowDialog` contract (§4), `handleRequestSendNow` in `page.tsx`
+  triggers `groupsQuery.refetch()` at the moment Send Now is requested, then passes the same
+  `targetGroups` prop (now freshly re-fetched) into `SendNowDialog` — satisfying the "live at the
+  moment of preview" intent without changing the documented prop shape.
+- **`campaign-mock-data.ts` removed (I10)**: `MOCK_CAMPAIGNS` and `MOCK_TARGET_GROUPS` are gone from
+  every production code path, replaced by `campaignsApiClient`/`groupsApiClient` queries.
+  `DEFAULT_CAMPAIGN_BODY` and `DEFAULT_CAMPAIGN_SENDER` are genuine product defaults (REQ-CMP-01 and
+  editor prefill), not mock data, so they were relocated as-is (same values) to a new
+  `frontend/src/lib/campaign-defaults.ts` rather than deleted.
+- **`Campaign` type (§1)**: `frontend/src/types/campaign.ts` now re-exports `Campaign`,
+  `CampaignStatus`, `CreateCampaignInput`, `UpdateCampaignInput` from `@email-campaign-v2/contracts`
+  instead of declaring local mock-phase interfaces (mirrors Groups' equivalent Integration change).
+- **Save Draft → Schedule / Send Now (I3–I6)**: since `scheduleCampaign`/`sendNow` only accept
+  `{ scheduledAt }` / no body, `handleConfirmSchedule`/`handleConfirmSendNow` first persist the
+  editor's current field values via create-or-update (`upsertCampaign`), then call
+  `scheduleCampaign`/`sendNow` on the resulting id — reproducing the same combined "save + transition"
+  behavior the mock phase implemented as a single local-state update, using the two real endpoints
+  that exist.
+- **Error handling (I9)**: 400/409 responses are mapped via a new
+  `frontend/src/lib/campaign-form-errors.ts` (mirrors `group-form-errors.ts`). Field-attributable
+  validation issues (e.g. unknown `targetGroupIds`) are set inline via React Hook Form's `setError`
+  inside `CampaignEditorModal`; all failures (including non-field immutability conflicts) additionally
+  surface as a blocking toast from `page.tsx`, and in every case the modal/dialog stays open with
+  entered values preserved (the mutation promise is rethrown, so `onOpenChange(false)` never runs on
+  failure).
+
+## 7. Visual Fidelity Notes
 
 Implemented against Figma nodes `22:65` (list) and `25:65` (create/edit modal). Faithfully
 reproduced: page header and "+ New Campaign" button, the `All`/`Drafts`/`Scheduled`/`Sent` tab

@@ -4,22 +4,24 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import type { Group } from "@email-campaign-v2/contracts";
+
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DEFAULT_CAMPAIGN_BODY, DEFAULT_CAMPAIGN_SENDER } from "@/lib/campaign-mock-data";
+import { DEFAULT_CAMPAIGN_BODY, DEFAULT_CAMPAIGN_SENDER } from "@/lib/campaign-defaults";
+import { toCampaignFieldError } from "@/lib/campaign-form-errors";
 import { isEditable } from "@/lib/campaign-status";
 import { campaignFormSchema, type CampaignFormValues } from "@/lib/validation/campaign-schema";
 import type { Campaign } from "@/types/campaign";
-import type { CampaignTargetGroup } from "@/types/campaign-target-group";
 
 interface CampaignEditorModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mode: "create" | "edit";
   campaign?: Campaign;
-  targetGroups: CampaignTargetGroup[];
+  targetGroups: Group[];
   onSaveDraft: (values: CampaignFormValues) => Promise<void>;
   onRequestSchedule: (values: CampaignFormValues) => void;
   onRequestSendNow: (values: CampaignFormValues) => void;
@@ -53,6 +55,7 @@ export function CampaignEditorModal({
     reset,
     watch,
     setValue,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<CampaignFormValues>({
     resolver: zodResolver(campaignFormSchema),
@@ -79,8 +82,17 @@ export function CampaignEditorModal({
   };
 
   const submitSaveDraft = handleSubmit(async (formValues) => {
-    await onSaveDraft(formValues);
-    onOpenChange(false);
+    try {
+      await onSaveDraft(formValues);
+      onOpenChange(false);
+    } catch (error) {
+      const fieldError = toCampaignFieldError(error);
+      if (fieldError) {
+        setError(fieldError.field, { type: "server", message: fieldError.message });
+      }
+      // Non-field errors (e.g. immutability conflicts) are surfaced via a toast by the parent;
+      // swallow here so the modal stays open with entered values.
+    }
   });
 
   const submitSchedule = handleSubmit((formValues) => {

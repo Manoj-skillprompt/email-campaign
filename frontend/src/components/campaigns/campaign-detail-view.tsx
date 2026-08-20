@@ -1,14 +1,15 @@
 "use client";
 
+import type { Group } from "@email-campaign-v2/contracts";
+
 import { CampaignStatusBadge } from "@/components/campaigns/campaign-status-badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Campaign } from "@/types/campaign";
-import type { CampaignTargetGroup } from "@/types/campaign-target-group";
 
 interface CampaignDetailViewProps {
   campaign: Campaign | null;
-  targetGroups: CampaignTargetGroup[];
+  targetGroups: Group[];
   onOpenChange: (open: boolean) => void;
 }
 

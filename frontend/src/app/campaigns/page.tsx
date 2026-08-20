@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { CampaignDetailView } from "@/components/campaigns/campaign-detail-view";
 import { CampaignEditorModal } from "@/components/campaigns/campaign-editor-modal";
@@ -12,10 +13,14 @@ import { ScheduleCampaignDialog } from "@/components/campaigns/schedule-campaign
 import { SendNowDialog } from "@/components/campaigns/send-now-dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
-import { MOCK_CAMPAIGNS, MOCK_TARGET_GROUPS } from "@/lib/campaign-mock-data";
+import { campaignsApiClient, groupsApiClient } from "@/lib/api-client";
+import { extractCampaignErrorMessage } from "@/lib/campaign-form-errors";
 import { isEditable, matchesStatusTab, type CampaignStatusTab } from "@/lib/campaign-status";
 import type { CampaignFormValues } from "@/lib/validation/campaign-schema";
 import type { Campaign } from "@/types/campaign";
+
+const CAMPAIGNS_QUERY_KEY = ["campaigns"];
+const GROUPS_QUERY_KEY = ["groups"];
 
 interface PendingAction {
   campaign?: Campaign;
@@ -30,8 +35,22 @@ function matchesSearch(campaign: Campaign, term: string): boolean {
 
 export default function CampaignsPage() {
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
 
-  const [campaigns, setCampaigns] = useState<Campaign[]>(MOCK_CAMPAIGNS);
+  const { data: campaignsResponse, isLoading } = campaignsApiClient.getCampaigns.useQuery(CAMPAIGNS_QUERY_KEY, {
+    query: {},
+  });
+  const campaigns = useMemo(() => campaignsResponse?.body ?? [], [campaignsResponse]);
+
+  const groupsQuery = groupsApiClient.getGroups.useQuery(GROUPS_QUERY_KEY, { query: {} });
+  const targetGroups = useMemo(() => groupsQuery.data?.body ?? [], [groupsQuery.data]);
+
+  const createMutation = campaignsApiClient.createCampaign.useMutation();
+  const updateMutation = campaignsApiClient.updateCampaign.useMutation();
+  const scheduleMutation = campaignsApiClient.scheduleCampaign.useMutation();
+  const sendNowMutation = campaignsApiClient.sendNow.useMutation();
+  const duplicateMutation = campaignsApiClient.duplicateCampaign.useMutation();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<CampaignStatusTab>("All");
   const [editorModal, setEditorModal] = useState<{ mode: "create" | "edit"; campaign?: Campaign } | null>(null);
@@ -55,35 +74,26 @@ export default function CampaignsPage() {
     }
   };
 
-  const upsertCampaign = (
-    values: CampaignFormValues,
-    campaign: Campaign | undefined,
-    overrides: Partial<Campaign> = {}
-  ): Campaign => {
-    const now = new Date().toISOString();
-    const saved: Campaign = campaign
-      ? { ...campaign, ...values, updatedAt: now, ...overrides }
-      : {
-          id: crypto.randomUUID(),
-          ...values,
-          status: "Draft",
-          scheduledAt: null,
-          sentAt: null,
-          createdAt: now,
-          updatedAt: now,
-          ...overrides,
-        };
+  const invalidateCampaigns = () => queryClient.invalidateQueries({ queryKey: CAMPAIGNS_QUERY_KEY });
 
-    setCampaigns((current) =>
-      campaign ? current.map((existing) => (existing.id === campaign.id ? saved : existing)) : [saved, ...current]
-    );
-
-    return saved;
+  const upsertCampaign = async (values: CampaignFormValues, campaign?: Campaign): Promise<Campaign> => {
+    if (campaign) {
+      const response = await updateMutation.mutateAsync({ params: { id: campaign.id }, body: values });
+      return response.body;
+    }
+    const response = await createMutation.mutateAsync({ body: values });
+    return response.body;
   };
 
   const handleSaveDraft = async (values: CampaignFormValues) => {
-    upsertCampaign(values, editorModal?.campaign);
-    showToast("Campaign saved as draft.");
+    try {
+      await upsertCampaign(values, editorModal?.campaign);
+      await invalidateCampaigns();
+      showToast("Campaign saved as draft.");
+    } catch (error) {
+      showToast(extractCampaignErrorMessage(error), "error");
+      throw error;
+    }
   };
 
   const handleRequestSchedule = (values: CampaignFormValues) => {
@@ -92,46 +102,45 @@ export default function CampaignsPage() {
 
   const handleRequestSendNow = (values: CampaignFormValues) => {
     setSendNowRequest({ campaign: editorModal?.campaign, values });
+    void groupsQuery.refetch();
   };
 
-  const handleConfirmSchedule = (scheduledAt: string) => {
+  const handleConfirmSchedule = async (scheduledAt: string) => {
     if (!scheduleRequest) return;
-    upsertCampaign(scheduleRequest.values, scheduleRequest.campaign, { status: "Scheduled", scheduledAt });
-    setScheduleRequest(null);
-    setEditorModal(null);
-    showToast("Campaign scheduled successfully.");
+    try {
+      const campaign = await upsertCampaign(scheduleRequest.values, scheduleRequest.campaign);
+      await scheduleMutation.mutateAsync({ params: { id: campaign.id }, body: { scheduledAt } });
+      await invalidateCampaigns();
+      setScheduleRequest(null);
+      setEditorModal(null);
+      showToast("Campaign scheduled successfully.");
+    } catch (error) {
+      showToast(extractCampaignErrorMessage(error), "error");
+    }
   };
 
-  const handleConfirmSendNow = () => {
+  const handleConfirmSendNow = async () => {
     if (!sendNowRequest) return;
-    const saved = upsertCampaign(sendNowRequest.values, sendNowRequest.campaign, { status: "Sending" });
-    setCampaigns((current) =>
-      current.map((existing) =>
-        existing.id === saved.id ? { ...existing, status: "Sent", sentAt: new Date().toISOString() } : existing
-      )
-    );
-    setSendNowRequest(null);
-    setEditorModal(null);
-    showToast("Campaign sent successfully.");
+    try {
+      const campaign = await upsertCampaign(sendNowRequest.values, sendNowRequest.campaign);
+      await sendNowMutation.mutateAsync({ params: { id: campaign.id } });
+      await invalidateCampaigns();
+      setSendNowRequest(null);
+      setEditorModal(null);
+      showToast("Campaign sent successfully.");
+    } catch (error) {
+      showToast(extractCampaignErrorMessage(error), "error");
+    }
   };
 
-  const handleDuplicate = (campaign: Campaign) => {
-    const now = new Date().toISOString();
-    const duplicate: Campaign = {
-      id: crypto.randomUUID(),
-      name: campaign.name,
-      subject: campaign.subject,
-      sender: campaign.sender,
-      body: campaign.body,
-      targetGroupIds: campaign.targetGroupIds,
-      status: "Draft",
-      scheduledAt: null,
-      sentAt: null,
-      createdAt: now,
-      updatedAt: now,
-    };
-    setCampaigns((current) => [duplicate, ...current]);
-    showToast("Campaign duplicated successfully.");
+  const handleDuplicate = async (campaign: Campaign) => {
+    try {
+      await duplicateMutation.mutateAsync({ params: { id: campaign.id } });
+      await invalidateCampaigns();
+      showToast("Campaign duplicated successfully.");
+    } catch (error) {
+      showToast(extractCampaignErrorMessage(error), "error");
+    }
   };
 
   return (
@@ -150,10 +159,12 @@ export default function CampaignsPage() {
           <CampaignSearch value={searchTerm} onChange={setSearchTerm} />
         </div>
 
-        {filteredCampaigns.length > 0 ? (
+        {isLoading ? (
+          <p className="py-16 text-center text-sm text-foreground-muted">Loading campaigns...</p>
+        ) : filteredCampaigns.length > 0 ? (
           <CampaignTable
             campaigns={filteredCampaigns}
-            targetGroups={MOCK_TARGET_GROUPS}
+            targetGroups={targetGroups}
             onOpen={openCampaign}
             onDuplicate={handleDuplicate}
           />
@@ -169,7 +180,7 @@ export default function CampaignsPage() {
         }}
         mode={editorModal?.mode ?? "create"}
         campaign={editorModal?.campaign}
-        targetGroups={MOCK_TARGET_GROUPS}
+        targetGroups={targetGroups}
         onSaveDraft={handleSaveDraft}
         onRequestSchedule={handleRequestSchedule}
         onRequestSendNow={handleRequestSendNow}
@@ -177,7 +188,7 @@ export default function CampaignsPage() {
 
       <CampaignDetailView
         campaign={detailCampaign}
-        targetGroups={MOCK_TARGET_GROUPS}
+        targetGroups={targetGroups}
         onOpenChange={(open) => {
           if (!open) setDetailCampaign(null);
         }}
@@ -196,7 +207,7 @@ export default function CampaignsPage() {
         open={sendNowRequest !== null}
         campaignName={sendNowRequest?.values.name ?? ""}
         targetGroupIds={sendNowRequest?.values.targetGroupIds ?? []}
-        targetGroups={MOCK_TARGET_GROUPS}
+        targetGroups={targetGroups}
         onOpenChange={(open) => {
           if (!open) setSendNowRequest(null);
         }}

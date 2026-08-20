@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import type { Group } from "@email-campaign-v2/contracts";
+
 import { CampaignStatusBadge } from "@/components/campaigns/campaign-status-badge";
 import type { Campaign } from "@/types/campaign";
-import type { CampaignTargetGroup } from "@/types/campaign-target-group";
 
 interface CampaignTableProps {
   campaigns: Campaign[];
-  targetGroups: CampaignTargetGroup[];
+  targetGroups: Group[];
   onOpen: (campaign: Campaign) => void;
   onDuplicate: (campaign: Campaign) => void;
 }
@@ -17,7 +18,7 @@ function formatDate(isoDate: string): string {
   return new Date(isoDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
 
-function resolveAudienceLabel(campaign: Campaign, targetGroups: CampaignTargetGroup[]): string {
+function resolveAudienceLabel(campaign: Campaign, targetGroups: Group[]): string {
   const namesById = new Map(targetGroups.map((group) => [group.id, group.name]));
   const names = campaign.targetGroupIds.map((id) => namesById.get(id) ?? "Unknown group");
   return names.join(", ");
