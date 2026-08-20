@@ -32,6 +32,11 @@ export class GroupRepository {
     return row;
   }
 
+  async findByIds(ids: string[]): Promise<GroupRow[]> {
+    if (ids.length === 0) return [];
+    return db.select().from(groups).where(inArray(groups.id, ids));
+  }
+
   async findByName(name: string, excludeId?: string): Promise<GroupRow | undefined> {
     const [row] = await db
       .select()
@@ -95,6 +100,15 @@ export class GroupRepository {
       .select({ contactId: groupContacts.contactId })
       .from(groupContacts)
       .where(eq(groupContacts.groupId, groupId));
+    return rows.map((row) => row.contactId);
+  }
+
+  async findContactIdsForGroups(groupIds: string[]): Promise<string[]> {
+    if (groupIds.length === 0) return [];
+    const rows = await db
+      .select({ contactId: groupContacts.contactId })
+      .from(groupContacts)
+      .where(inArray(groupContacts.groupId, groupIds));
     return rows.map((row) => row.contactId);
   }
 }

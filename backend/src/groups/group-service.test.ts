@@ -43,6 +43,9 @@ function createFakeGroupRepository(seed: GroupRow[] = []): GroupRepository {
     async findById(id: string) {
       return rows.find((row) => row.id === id);
     },
+    async findByIds(ids: string[]) {
+      return rows.filter((row) => ids.includes(row.id));
+    },
     async findByName(name: string, excludeId?: string) {
       return rows.find((row) => row.name.toLowerCase() === name.toLowerCase() && row.id !== excludeId);
     },
@@ -77,6 +80,13 @@ function createFakeGroupRepository(seed: GroupRow[] = []): GroupRepository {
     },
     async findContactIds(groupId: string) {
       return [...(membership.get(groupId) ?? new Set())];
+    },
+    async findContactIdsForGroups(groupIds: string[]) {
+      const result: string[] = [];
+      for (const groupId of groupIds) {
+        result.push(...(membership.get(groupId) ?? new Set()));
+      }
+      return result;
     },
   } as unknown as GroupRepository;
 }

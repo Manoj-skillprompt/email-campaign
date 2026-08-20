@@ -37,6 +37,25 @@ sqlite.exec(`
     contact_id TEXT NOT NULL REFERENCES contacts(id),
     UNIQUE(group_id, contact_id)
   );
+
+  CREATE TABLE IF NOT EXISTS campaigns (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    sender TEXT NOT NULL,
+    body TEXT NOT NULL,
+    status TEXT NOT NULL,
+    scheduled_at TEXT,
+    sent_at TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS campaign_target_groups (
+    campaign_id TEXT NOT NULL REFERENCES campaigns(id),
+    group_id TEXT NOT NULL REFERENCES groups(id),
+    UNIQUE(campaign_id, group_id)
+  );
 `);
 
 export const db = drizzle(sqlite, { schema });

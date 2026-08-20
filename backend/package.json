@@ -9,6 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.658.0",
     "@email-campaign-v2/contracts": "workspace:*",
     "@ts-rest/express": "^3.51.0",
     "better-sqlite3": "^11.0.0",
