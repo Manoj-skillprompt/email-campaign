@@ -2,11 +2,21 @@ import { campaignsContract, contactsContract, groupsContract } from "@email-camp
 import { createExpressEndpoints } from "@ts-rest/express";
 import express from "express";
 
+import path from "node:path";
+
 if (typeof process.loadEnvFile === "function") {
-  try {
-    process.loadEnvFile();
-  } catch {
-    // .env file is optional
+  const possibleEnvPaths = [
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(__dirname, "../.env"),
+    path.resolve(__dirname, "../../.env"),
+  ];
+  for (const envPath of possibleEnvPaths) {
+    try {
+      process.loadEnvFile(envPath);
+      break;
+    } catch {
+      // try next path
+    }
   }
 }
 
