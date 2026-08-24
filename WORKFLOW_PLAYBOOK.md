@@ -46,7 +46,7 @@ Replace `[[FEATURE]]` with the actual feature name (e.g. `contacts`, `groups`, `
 
 - Agent inspects `features/[[FEATURE]]/fds.md`, `behavior.md`, `figma.md`, and `rules/`.
 - Detects scenario (A: New Standalone, B: Spec Update, C: Cross-Feature Dependency).
-- Generates `features/[[FEATURE]]/plans/plan-v<version>.md` (e.g. `plan-v1.0.0.md`).
+- Generates `features/[[FEATURE]]/plan.md`.
 
 ---
 
@@ -54,7 +54,7 @@ Replace `[[FEATURE]]` with the actual feature name (e.g. `contacts`, `groups`, `
 
 ### Action:
 
-1. Review `features/[[FEATURE]]/plans/plan-v<version>.md`.
+1. Review `features/[[FEATURE]]/plan.md`.
 2. Ensure task breakdown, layering, and test tasks are complete and accurate.
 
 ### Commit:
@@ -82,6 +82,7 @@ git add -A && git commit -m "docs([[FEATURE]]): add approved implementation plan
 ### What Happens:
 
 - Agent builds frontend UI matching Figma specs using mock data.
+- Generates draft `features/[[FEATURE]]/presentation-contract.md`.
 
 ---
 
@@ -91,12 +92,13 @@ git add -A && git commit -m "docs([[FEATURE]]): add approved implementation plan
 
 1. Run `pnpm dev` and visit `http://localhost:3000/[[FEATURE]]`.
 2. Verify visual layout, modals, empty states, and forms.
+3. Review `features/[[FEATURE]]/presentation-contract.md`.
 
 ### Commit:
 
 ```bash
 pnpm format
-git add -A && git commit -m "feat([[FEATURE]]): frontend build complete and UI frozen"
+git add -A && git commit -m "feat([[FEATURE]]): frontend build complete and presentation contract frozen"
 ```
 
 ---
@@ -117,7 +119,7 @@ git add -A && git commit -m "feat([[FEATURE]]): frontend build complete and UI f
 
 ### What Happens:
 
-- Agent implements `packages/contracts`, Drizzle DB schema/join tables, Repository, Service, and Express Router.
+- Agent implements `packages/contracts`, Drizzle DB schema/join tables, Repository, Service, and Express Router to satisfy the frozen `presentation-contract.md`.
 
 ### Commit:
 
@@ -172,7 +174,7 @@ git add -A && git commit -m "feat([[FEATURE]]): integration build complete"
 
 ### What Happens:
 
-- Agent writes all Unit, API Integration, Component, E2E, and Regression tests listed in the approved plan (`plans/plan-v<version>.md`).
+- Agent writes all Unit, API Integration, Component, E2E, and Regression tests listed in `plan.md`.
 - Fixes genuine production defects if surfaced by spec tests (documented as notes).
 
 ### Commit:

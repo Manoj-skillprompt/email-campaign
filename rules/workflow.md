@@ -11,18 +11,18 @@ FDS + Visual Design + Behavior Spec
         │
         ▼
   Plan Mode (read-only)
-        │ → outputs features/<id>/plans/plan-v<version>.md
+        │ → outputs features/<id>/plan.md
         ▼
-  Developer Approval Gate      ← human reviews plan; all specs frozen here
+  Developer Approval Gate      ← human reviews plan.md; all specs frozen here
         │
         ▼
-  Frontend Build Mode          ← builds UI against mock data
+  Frontend Build Mode          ← builds UI against mock data (Presentation Contract)
         │ → lint + typecheck after every task (3-attempt self-correction)
         ▼
   UI Review & Freeze           ← human/LLM confirms UI against visual spec
-        │ → UI design and components frozen
+        │ → mock data structures frozen as Presentation Contract
         ▼
-  Backend Build Mode           ← implements API to satisfy contracts and specs
+  Backend Build Mode           ← implements API to satisfy the Presentation Contract
         │ → lint + typecheck after every task (3-attempt self-correction)
         ▼
   Integration Build Mode       ← replaces frontend mocks with real backend calls
@@ -44,11 +44,11 @@ FDS + Visual Design + Behavior Spec
 
 ## 2. Phase Definitions
 
-### Phase 1 — Plan Mode (`.ai/prompts/plan-mode.md`)
+### Phase 1 — Plan Mode (`.ai/prompts/plan-mode-system.md`)
 
 - **Role**: Read-only specification analyzer and task planner.
 - **Input**: `fds.md`, `behavior.md`, `visuals/`, `rules/`
-- **Output**: `features/<id>/plans/plan-v<version>.md`
+- **Output**: `features/<id>/plan.md`
 - **Exit criteria**:
   - Implementation Plan covers all FDS requirements with spec-traced atomic tasks.
   - All known ambiguities at planning time are resolved and documented.
@@ -57,42 +57,42 @@ FDS + Visual Design + Behavior Spec
 ### Phase 2 — Developer Approval Gate
 
 - **Role**: Human review checkpoint after planning, before any code is written.
-- **Action**: Developer reviews `features/<id>/plans/plan-v<version>.md` and either approves or requests changes.
+- **Action**: Developer reviews `features/<id>/plan.md` and either approves or requests changes.
 - **On approval**: All specs (`fds.md`, `behavior.md`, `visuals/`) are frozen. No changes permitted without creating a new version and restarting planning.
 - **Exit criteria**: Explicit human approval is recorded.
 
-### Phase 3 — Frontend Build Mode (`.ai/prompts/build-mode.md`)
+### Phase 3 — Frontend Build Mode (`.ai/prompts/frontend-build-mode-system.md`)
 
 - **Role**: Implements UI components using mock data only. No real backend calls.
 - **Rules**:
-  - Implements only tasks marked `layer: frontend` in the approved plan.
+  - Implements only tasks marked `layer: frontend` in `plan.md`.
   - Uses mock data structures that reflect expected API response shapes.
   - Runs `pnpm lint` + `pnpm typecheck` after every task.
   - 3-attempt self-correction loop per task.
-- **Exit criteria**: Lint and typecheck pass. All frontend tasks complete.
+- **Exit criteria**: Lint and typecheck pass. All frontend tasks complete. Mock data structures documented in `features/<id>/presentation-contract.md`.
 
 ### Phase 4 — UI Review & Freeze
 
 - **Role**: Human or LLM visual review of the frontend against the visual spec.
 - **Evaluation criteria**: Each acceptance criterion in `visuals/figma.md` must be confirmed as satisfied or explicitly noted as deferred.
-- **On freeze**: UI design and component behavior are frozen.
-- **Exit criteria**: Reviewer explicitly signs off. UI is frozen.
+- **On freeze**: `features/<id>/presentation-contract.md` is frozen. It becomes the authoritative API contract the backend must satisfy.
+- **Exit criteria**: Reviewer explicitly signs off. Presentation Contract is frozen.
 
-### Phase 5 — Backend Build Mode (`.ai/prompts/build-mode.md`)
+### Phase 5 — Backend Build Mode (`.ai/prompts/backend-build-mode-system.md`)
 
-- **Role**: Implements backend API layers (Presentation → Service → Repository → Database) to satisfy the API contracts and FDS specifications.
+- **Role**: Implements backend API layers (Presentation → Service → Repository → Database) to satisfy the frozen Presentation Contract.
 - **Rules**:
-  - Implements only tasks marked `layer: backend` in the approved plan.
-  - Must satisfy all request/response shapes defined in the API contract (`packages/contracts`) and FDS.
+  - Implements only tasks marked `layer: backend` in `plan.md`.
+  - Must satisfy all request/response shapes defined in `features/<id>/presentation-contract.md`.
   - Runs `pnpm lint` + `pnpm typecheck` after every task.
   - 3-attempt self-correction loop per task.
-- **Exit criteria**: Lint and typecheck pass. All backend tasks complete. API shapes match contract definitions.
+- **Exit criteria**: Lint and typecheck pass. All backend tasks complete. API shapes match the Presentation Contract.
 
-### Phase 6 — Integration Build Mode (`.ai/prompts/build-mode.md`)
+### Phase 6 — Integration Build Mode (`.ai/prompts/integration-build-mode-system.md`)
 
 - **Role**: Replaces frontend mock data with real backend API calls via ts-rest client.
 - **Rules**:
-  - Implements only tasks marked `layer: integration` in the approved plan.
+  - Implements only tasks marked `layer: integration` in `plan.md`.
   - Runs `pnpm lint` + `pnpm typecheck` after every task.
   - 3-attempt self-correction loop per task.
 - **Exit criteria**: Lint and typecheck pass. All integration tasks complete. No mock data remaining in production code paths.
@@ -106,7 +106,7 @@ FDS + Visual Design + Behavior Spec
   - 3-attempt retry limit. On persistent failure, stop and escalate.
 - **Exit criteria**: SonarQube Static Analysis Gate passes with zero blocker/critical issues.
 
-### Phase 8 — Testing Build Mode (`.ai/prompts/test-build-mode.md`)
+### Phase 8 — Testing Build Mode (`.ai/prompts/testing-build-mode-system.md`)
 
 - **Role**: Spec-driven, post-implementation test generation.
 - **Input**: Frozen FDS (`fds.md`), Behavior Spec (`behavior.md`), integrated source code.
@@ -184,7 +184,7 @@ Before choosing the workflow depth for a feature, classify it:
 | **Team/agent separation**     | Single developer or agent        | Two, loosely coordinated      | Dedicated frontend + backend roles       |
 
 - **Score 0–2**: Use simplified two-mode flow (inline tests, no staged phases).
-- **Score 3–4**: Hybrid — adopt Approval Gate; keep per-task testing.
+- **Score 3–4**: Hybrid — adopt Approval Gate + Presentation Contract; keep per-task testing.
 - **Score 5–6**: Use full Staged Dual-Validation flow.
 
 ---
@@ -195,8 +195,8 @@ Before choosing the workflow depth for a feature, classify it:
 features/<feature-id>/
 ├── fds.md                    # Feature Design Specification (YAML frontmatter + requirements)
 ├── behavior.md               # Interaction & Behavioral Specification
-├── plans/                    # Housing for versioned Implementation Plans
-│   └── plan-v1.0.0.md        # Implementation Plan (generated in Plan Mode; frozen after approval)
+├── plan.md                   # Implementation Plan (generated in Plan Mode; frozen after approval)
+├── presentation-contract.md  # Frozen Presentation Contract (generated after UI Review & Freeze)
 ├── validation-report.md      # Validation Report (generated after Code Validation 2)
 └── visuals/                  # Visual design specs (figma.md, screenshots)
 ```
