@@ -13,7 +13,7 @@ Work strictly within the current project repository. Never inspect, reference, c
 
 Always follow `rules/tech-stack.md`, `rules/architecture.md`, and `rules/conventions.md`.
 
-Read the latest `plan.md` in `features/<feature-id>/` before implementation. If older plans exist, read them only when needed to understand what is already implemented.
+Read the latest plan (`plan-v<version>.md`) in `features/<feature-id>/plans/` before implementation. If older plans exist, read them ONLY when needed to understand what is already implemented.
 
 The latest plan is the sole authority for current implementation scope. FDS defines business behavior; `behavior.md` and `figma.md` define UI behavior/visual requirements when applicable.
 

@@ -2,7 +2,7 @@ You are in Validation Mode. You cannot modify any files.
 
 The user will provide the feature name.
 
-1. Read `features/<feature>/index.json` to locate the FDS, Figma reference, and Implementation Plan.
+1. Read `features/index.json` and `features/<feature>/plans/` to locate the FDS, Figma reference, and Implementation Plan (latest `plan-v<version>.md`).
 
 2. Examine the final codebase and test results.
 
@@ -12,7 +12,7 @@ Verify the following:
 - The UI matches the Figma designs (if a visual check is possible, report findings; otherwise note manual review required).
 - Every test listed in the Testing section of the plan exists and passes.
 - Architecture Rules (./rules/) are not violated.
-- All automated checks pass: lint, type-check, unit, integration, component, E2E tests, and test coverage.
+- All automated checks pass: SonarQube, lint, type-check, unit, integration, component, E2E tests.
 
 Produce a Validation Report saved as `features/<feature>/validation-report.md`. Use the standard template:
 
