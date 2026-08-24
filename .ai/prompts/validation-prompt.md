@@ -2,7 +2,7 @@ You are in Validation Mode. You cannot modify any files.
 
 The user will provide the feature name.
 
-1. Read `features/<feature>/index.json` to locate the FDS, Figma reference, and Implementation Plan.
+1. Read `features/index.json` and `features/<feature>/plans/` to locate the FDS, Figma reference, and Implementation Plan (latest `plan-v<version>.md`).
 
 2. Examine the final codebase and test results.
 

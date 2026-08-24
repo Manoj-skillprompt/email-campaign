@@ -9,9 +9,9 @@ This project uses the **Staged Dual-Validation Workflow**. All AI agents must re
 | Phase                           | When                          | System Prompt                                                        |
 | :------------------------------ | :---------------------------- | :------------------------------------------------------------------- |
 | **1 — Plan Mode**               | Before any code is written    | `.ai/prompts/plan-mode.md`                                           |
-| **2 — Developer Approval Gate** | After plan.md is generated    | Human reviews & approves plan.md                                     |
+| **2 — Developer Approval Gate** | After plan is generated       | Human reviews & approves `plans/plan-v<version>.md`                  |
 | **3–5 — Build Mode**            | After approval; provide PHASE | `.ai/prompts/build-mode.md` + `PHASE=Frontend\|Backend\|Integration` |
-| **6 — UI Review & Freeze**      | After Frontend phase          | Human approves UI; presentation-contract.md is frozen                |
+| **6 — UI Review & Freeze**      | After Frontend phase          | Human approves UI                                                    |
 | **7 — Test Build Mode**         | After Integration phase       | `.ai/prompts/test-build-mode.md`                                     |
 | **8 — Validation Mode**         | After all tests pass          | `.ai/prompts/validation-prompt.md`                                   |
 
@@ -68,8 +68,8 @@ features/
 └── <feature-id>/
     ├── fds.md                   # Feature Design Specification (source of truth)
     ├── behavior.md              # Interaction & behavioral spec
-    ├── plan.md                  # Implementation Plan (generated in Plan Mode)
-    ├── presentation-contract.md # Frozen after UI Review & Freeze
+    ├── plans/                   # Implementation Plans folder (versioned per FDS)
+    │   └── plan-v1.0.0.md       # Implementation Plan (generated in Plan Mode; versioned per FDS)
     ├── validation-report.md     # Generated in Validation Mode
     └── visuals/
         ├── figma.md             # Figma design reference
@@ -87,7 +87,7 @@ features/
 
 ## Key Constraints
 
-- **Never modify** `fds.md`, `behavior.md`, `figma.md`, `plan.md`, or `rules/` during Build or Test modes.
+- **Never modify** `fds.md`, `behavior.md`, `figma.md`, plans in `plans/`, or `rules/` during Build or Test modes.
 - **Bounded retry**: max 3 attempts per task, max 5 attempts for full suite fixes.
 - **No new libraries** without explicit approval.
 - **No production code changes** in Test Build Mode unless a defect is formally documented.
