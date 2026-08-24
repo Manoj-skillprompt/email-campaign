@@ -11,7 +11,6 @@ dependencies: []
 changelog:
   - version: 1.0.0
     date: 2026-08-21
-    pr: "#001"
     summary: Initial specification for Contacts management
 ---
 

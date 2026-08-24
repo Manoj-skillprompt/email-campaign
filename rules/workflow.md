@@ -11,30 +11,30 @@ FDS + Visual Design + Behavior Spec
         │
         ▼
   Plan Mode (read-only)
-        │ → outputs features/<id>/plan.md
+        │ → outputs features/<id>/plans/plan-v<version>.md
         ▼
-  Developer Approval Gate      ← human reviews plan.md; all specs frozen here
+  Developer Approval Gate      ← human reviews plan; all specs frozen here
         │
         ▼
-  Frontend Build Mode          ← builds UI against mock data (Presentation Contract)
+  Frontend Build Mode          ← builds UI against mock data
         │ → lint + typecheck after every task (3-attempt self-correction)
         ▼
   UI Review & Freeze           ← human/LLM confirms UI against visual spec
-        │ → mock data structures frozen as Presentation Contract
+        │ → UI design and components frozen
         ▼
-  Backend Build Mode           ← implements API to satisfy the Presentation Contract
+  Backend Build Mode           ← implements API to satisfy contracts and specs
         │ → lint + typecheck after every task (3-attempt self-correction)
         ▼
   Integration Build Mode       ← replaces frontend mocks with real backend calls
         │ → lint + typecheck after every task (3-attempt self-correction)
         ▼
-  Static Quality Gate          ← ESLint + TypeScript typecheck across all workspaces
+  Code Validation 1            ← SonarQube Static Analysis Gate (no coverage threshold)
         │ → fix issues; bounded 3-attempt retry
         ▼
   Testing Build Mode           ← spec-driven test generation (FDS + behavior spec)
-        │ → unit, integration, component, and E2E tests
+        │ → no production code modifications unless a documented defect is found
         ▼
-  Full Quality Gate            ← all tests pass + coverage threshold verified
+  Code Validation 2            ← SonarQube Full Quality Gate (static + coverage)
         │ → fix issues; bounded 3-attempt retry
         ▼
   Validation                   → Validation Report (ephemeral by default)
@@ -48,7 +48,7 @@ FDS + Visual Design + Behavior Spec
 
 - **Role**: Read-only specification analyzer and task planner.
 - **Input**: `fds.md`, `behavior.md`, `visuals/`, `rules/`
-- **Output**: `features/<id>/plan.md`
+- **Output**: `features/<id>/plans/plan-v<version>.md`
 - **Exit criteria**:
   - Implementation Plan covers all FDS requirements with spec-traced atomic tasks.
   - All known ambiguities at planning time are resolved and documented.
@@ -57,7 +57,7 @@ FDS + Visual Design + Behavior Spec
 ### Phase 2 — Developer Approval Gate
 
 - **Role**: Human review checkpoint after planning, before any code is written.
-- **Action**: Developer reviews `features/<id>/plan.md` and either approves or requests changes.
+- **Action**: Developer reviews `features/<id>/plans/plan-v<version>.md` and either approves or requests changes.
 - **On approval**: All specs (`fds.md`, `behavior.md`, `visuals/`) are frozen. No changes permitted without creating a new version and restarting planning.
 - **Exit criteria**: Explicit human approval is recorded.
 
@@ -65,7 +65,7 @@ FDS + Visual Design + Behavior Spec
 
 - **Role**: Implements UI components using mock data only. No real backend calls.
 - **Rules**:
-  - Implements only tasks marked `layer: frontend` in `plan.md`.
+  - Implements only tasks marked `layer: frontend` in the approved plan.
   - Uses mock data structures that reflect expected API response shapes.
   - Runs `pnpm lint` + `pnpm typecheck` after every task.
   - 3-attempt self-correction loop per task.
@@ -75,36 +75,36 @@ FDS + Visual Design + Behavior Spec
 
 - **Role**: Human or LLM visual review of the frontend against the visual spec.
 - **Evaluation criteria**: Each acceptance criterion in `visuals/figma.md` must be confirmed as satisfied or explicitly noted as deferred.
-- **On freeze**: Frontend visual layout is approved.
-- **Exit criteria**: Reviewer explicitly signs off.
+- **On freeze**: UI design and component behavior are frozen.
+- **Exit criteria**: Reviewer explicitly signs off. UI is frozen.
 
 ### Phase 5 — Backend Build Mode (`.ai/prompts/build-mode.md`)
 
-- **Role**: Implements backend API layers (Presentation → Service → Repository → Database) to satisfy the approved feature specifications.
+- **Role**: Implements backend API layers (Presentation → Service → Repository → Database) to satisfy the API contracts and FDS specifications.
 - **Rules**:
-  - Implements only tasks marked `layer: backend` in `plan.md`.
-  - Must satisfy all request/response shapes defined in `packages/contracts`.
+  - Implements only tasks marked `layer: backend` in the approved plan.
+  - Must satisfy all request/response shapes defined in the API contract (`packages/contracts`) and FDS.
   - Runs `pnpm lint` + `pnpm typecheck` after every task.
   - 3-attempt self-correction loop per task.
-- **Exit criteria**: Lint and typecheck pass. All backend tasks complete.
+- **Exit criteria**: Lint and typecheck pass. All backend tasks complete. API shapes match contract definitions.
 
 ### Phase 6 — Integration Build Mode (`.ai/prompts/build-mode.md`)
 
 - **Role**: Replaces frontend mock data with real backend API calls via ts-rest client.
 - **Rules**:
-  - Implements only tasks marked `layer: integration` in `plan.md`.
+  - Implements only tasks marked `layer: integration` in the approved plan.
   - Runs `pnpm lint` + `pnpm typecheck` after every task.
   - 3-attempt self-correction loop per task.
 - **Exit criteria**: Lint and typecheck pass. All integration tasks complete. No mock data remaining in production code paths.
 
-### Phase 7 — Static Quality Gate
+### Phase 7 — Code Validation 1 — Static Analysis Gate
 
-- **Tool**: `pnpm lint` (ESLint) + `pnpm typecheck` (`tsc --noEmit`).
-- **What it checks**: Code style, syntax, TypeScript typing, unused variables across all packages.
+- **Tool**: SonarQube with **Static Analysis Gate** profile (no coverage threshold).
+- **What it checks**: Code smells, security vulnerabilities, complexity violations, duplication.
 - **Rules**:
-  - Fix all errors and warnings before advancing.
+  - Fix all blocker and critical issues before advancing.
   - 3-attempt retry limit. On persistent failure, stop and escalate.
-- **Exit criteria**: `pnpm lint` and `pnpm typecheck` pass with zero errors.
+- **Exit criteria**: SonarQube Static Analysis Gate passes with zero blocker/critical issues.
 
 ### Phase 8 — Testing Build Mode (`.ai/prompts/test-build-mode.md`)
 
@@ -112,20 +112,20 @@ FDS + Visual Design + Behavior Spec
 - **Input**: Frozen FDS (`fds.md`), Behavior Spec (`behavior.md`), integrated source code.
 - **Rules**:
   - Primary context is the specification, not the implementation.
-  - Generates unit, integration, component, and E2E tests that validate behavior against the FDS.
+  - Generates unit, integration, and E2E tests that validate behavior against the FDS.
   - **MUST NOT modify production source code** unless a genuine defect is found.
   - Defect classification required: `defect` (return to Backend/Integration Build) vs `bad-test` (rewrite the test).
   - Human escalation if classification is uncertain.
 - **Exit criteria**: All tests pass. Coverage meets the threshold declared in `fds.md` frontmatter.
 
-### Phase 9 — Full Quality Gate
+### Phase 9 — Code Validation 2 — Full Quality Gate
 
-- **Tool**: `pnpm test` (Vitest) + `pnpm test:e2e` (Playwright) + `pnpm test:coverage`.
-- **What it checks**: Unit, integration, component, E2E test passes + line/branch coverage against `coverage_target`.
+- **Tool**: SonarQube with **Full Quality Gate** profile (static analysis + coverage thresholds).
+- **What it checks**: Everything in Validation 1 plus line/branch coverage.
 - **Rules**:
-  - Coverage threshold: as declared in `fds.md` frontmatter (default: >80% line coverage).
+  - Coverage threshold: as declared in `fds.md` frontmatter (default: >80% new code line coverage).
   - 3-attempt retry limit. On persistent failure, stop and escalate.
-- **Exit criteria**: All automated tests pass and coverage threshold is met.
+- **Exit criteria**: SonarQube Full Quality Gate passes.
 
 ### Phase 10 — Validation Report
 
@@ -147,8 +147,8 @@ Test failure (Testing Build)
   ├─ FDS ambiguity surfaced?           → unfreeze specs; create new FDS version; restart Phase 1
   └─ Bad test (not a defect)?          → rewrite test; stay in Phase 8
 
-Static/Full Quality Gate failure
-  ├─ Code smell / typing error?        → fix in-place (stay in current phase)
+SonarQube Validation 1 or 2 failure
+  ├─ Code smell / complexity?          → fix in-place (stay in current phase)
   └─ Architectural violation?          → return to Phase 5 (Backend Build)
 
 Backend Build failure
@@ -184,7 +184,7 @@ Before choosing the workflow depth for a feature, classify it:
 | **Team/agent separation**     | Single developer or agent        | Two, loosely coordinated      | Dedicated frontend + backend roles       |
 
 - **Score 0–2**: Use simplified two-mode flow (inline tests, no staged phases).
-- **Score 3–4**: Hybrid — adopt Approval Gate + contracts package; keep per-task testing.
+- **Score 3–4**: Hybrid — adopt Approval Gate; keep per-task testing.
 - **Score 5–6**: Use full Staged Dual-Validation flow.
 
 ---
@@ -195,7 +195,8 @@ Before choosing the workflow depth for a feature, classify it:
 features/<feature-id>/
 ├── fds.md                    # Feature Design Specification (YAML frontmatter + requirements)
 ├── behavior.md               # Interaction & Behavioral Specification
-├── plan.md                   # Implementation Plan (generated in Plan Mode; frozen after approval)
+├── plans/                    # Housing for versioned Implementation Plans
+│   └── plan-v1.0.0.md        # Implementation Plan (generated in Plan Mode; frozen after approval)
 ├── validation-report.md      # Validation Report (generated after Code Validation 2)
 └── visuals/                  # Visual design specs (figma.md, screenshots)
 ```
@@ -217,12 +218,14 @@ All `fds.md` files MUST declare:
 
 ---
 
-## 7. Quality Gate Standards
+## 7. SonarQube Quality Gate Profiles
 
-| Quality Gate            | Used In | Requirements                                                                        |
-| :---------------------- | :------ | :---------------------------------------------------------------------------------- |
-| **Static Quality Gate** | Phase 7 | `pnpm lint` (ESLint) + `pnpm typecheck` (`tsc --noEmit`) pass across all workspaces |
-| **Full Quality Gate**   | Phase 9 | `pnpm test` + `pnpm test:e2e` pass + line coverage meets `coverage_target` in FDS   |
+Two named profiles must be configured before first use:
+
+| Profile                  | Used In                     | Coverage Threshold                                 | Other Rules                                                 |
+| :----------------------- | :-------------------------- | :------------------------------------------------- | :---------------------------------------------------------- |
+| **Static Analysis Gate** | Code Validation 1 (Phase 7) | Disabled (zero tests exist)                        | Bugs, vulnerabilities, code smells, complexity, duplication |
+| **Full Quality Gate**    | Code Validation 2 (Phase 9) | Enabled (per `coverage_target` in FDS frontmatter) | All Static Analysis Gate rules + coverage                   |
 
 ---
 
