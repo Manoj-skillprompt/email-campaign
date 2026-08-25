@@ -12,8 +12,7 @@ export function GroupEmptyState({ onCreateGroup }: GroupEmptyStateProps) {
         <p className="text-sm text-foreground-muted">Try adjusting your search or create a new group.</p>
       </div>
       <Button type="button" onClick={onCreateGroup}>
-        <img src="/icons/contacts/plus.svg" alt="" className="size-3.5" />
-        Create Group
+        + Create Group
       </Button>
     </div>
   );

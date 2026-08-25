@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import type { GroupWithMembers } from "../groups.mock-api";
+import type { GroupWithMembers } from "../group.types";
 
 const AVATAR_COLORS = ["#007bff", "#4f46e5", "#10b981", "#f59e0b"];
 const MAX_AVATARS = 4;
@@ -38,7 +38,7 @@ export function GroupCard({ group, onEdit, onDelete, onManage }: GroupCardProps)
   const previewMembers = group.members.slice(0, MAX_AVATARS);
 
   return (
-    <div className="flex w-full flex-col gap-4 rounded-2xl border border-border bg-white p-6">
+    <div className="flex w-full flex-col gap-4 rounded-lg border border-border bg-white p-6">
       <div className="flex w-full items-center justify-between">
         <p className="text-[18px] font-bold text-foreground">{group.name}</p>
         <div ref={menuRef} className="relative">
@@ -80,7 +80,7 @@ export function GroupCard({ group, onEdit, onDelete, onManage }: GroupCardProps)
       <p className="text-sm text-foreground-muted">{group.contactIds.length} contacts matched</p>
 
       <div className="flex w-full items-center justify-between">
-        <div className="relative h-8" style={{ width: `${previewMembers.length * 22 + 10}px` }}>
+        <div className="relative h-8 w-24">
           {previewMembers.map((member, index) => (
             <div
               key={member.id}
@@ -94,7 +94,7 @@ export function GroupCard({ group, onEdit, onDelete, onManage }: GroupCardProps)
         <button
           type="button"
           onClick={() => onManage(group)}
-          className="flex items-center gap-1.5 rounded-lg bg-background px-4 py-2 text-sm font-medium text-foreground-muted hover:opacity-80"
+          className="flex items-center gap-1.5 rounded-md bg-[#f3f4f6] px-4 py-2 text-sm font-medium text-[#4b5563] hover:opacity-80"
         >
           <img src="/icons/groups/pencil.svg" alt="" className="size-3.5" />
           Manage Group

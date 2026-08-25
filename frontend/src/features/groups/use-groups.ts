@@ -1,29 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import type { CreateGroupInput, UpdateGroupInput } from "./group.types";
-import {
-  assignContactToGroup,
-  createGroup,
-  deleteGroup,
-  listGroups,
-  unassignContactFromGroup,
-  updateGroup,
-} from "./groups.mock-api";
-import type { MockContactRef } from "./groups.mock-data";
-
-const groupsQueryKey = (search?: string) => ["groups", { search: search ?? "" }] as const;
+import { tsrGroups } from "@/lib/api-client";
 
 export function useGroupsQuery(search: string) {
-  return useQuery({
-    queryKey: groupsQueryKey(search),
-    queryFn: () => listGroups({ search }),
+  return tsrGroups.listGroups.useQuery({
+    queryKey: ["groups", { search }],
+    queryData: { query: { search: search || undefined } },
   });
 }
 
 export function useCreateGroupMutation() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: CreateGroupInput) => createGroup(input),
+  return tsrGroups.createGroup.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
@@ -32,8 +20,7 @@ export function useCreateGroupMutation() {
 
 export function useUpdateGroupMutation() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: UpdateGroupInput }) => updateGroup(id, input),
+  return tsrGroups.updateGroup.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
@@ -42,8 +29,7 @@ export function useUpdateGroupMutation() {
 
 export function useDeleteGroupMutation() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => deleteGroup(id),
+  return tsrGroups.deleteGroup.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
@@ -52,9 +38,7 @@ export function useDeleteGroupMutation() {
 
 export function useAssignContactMutation() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ groupId, contact }: { groupId: string; contact: MockContactRef }) =>
-      assignContactToGroup(groupId, contact),
+  return tsrGroups.assignContact.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
@@ -63,9 +47,7 @@ export function useAssignContactMutation() {
 
 export function useUnassignContactMutation() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ groupId, contactId }: { groupId: string; contactId: string }) =>
-      unassignContactFromGroup(groupId, contactId),
+  return tsrGroups.unassignContact.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
     },

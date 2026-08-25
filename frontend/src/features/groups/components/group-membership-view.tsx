@@ -5,8 +5,7 @@ import { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useContactsQuery } from "@/features/contacts/use-contacts";
 
-import type { GroupWithMembers } from "../groups.mock-api";
-import type { MockContactRef } from "../groups.mock-data";
+import type { GroupMember, GroupWithMembers } from "../group.types";
 
 function initialOf(name: string): string {
   return name.trim().charAt(0).toUpperCase() || "?";
@@ -15,7 +14,7 @@ function initialOf(name: string): string {
 interface GroupMembershipViewProps {
   group: GroupWithMembers | null;
   onOpenChange: (open: boolean) => void;
-  onAssign: (groupId: string, contact: MockContactRef) => Promise<void>;
+  onAssign: (groupId: string, contact: GroupMember) => Promise<void>;
   onUnassign: (groupId: string, contactId: string) => Promise<void>;
 }
 

@@ -1,4 +1,4 @@
-import type { GroupWithMembers } from "../groups.mock-api";
+import type { GroupWithMembers } from "../group.types";
 import { GroupCard } from "./group-card";
 
 interface GroupGridProps {
