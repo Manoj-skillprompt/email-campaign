@@ -11,9 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import type { Contact } from "../contact.types";
-import { DuplicateEmailError } from "../contacts.mock-api";
 
 type ContactFormValues = CreateContactInput;
+
+function isConflictError(error: unknown): error is { status: 409; body: { message: string } } {
+  return typeof error === "object" && error !== null && "status" in error && error.status === 409;
+}
 
 interface ContactFormModalProps {
   open: boolean;
@@ -33,9 +36,7 @@ export function ContactFormModal({ open, mode, contact, onOpenChange, onSubmit }
     setError,
     formState: { errors, isSubmitting },
   } = useForm<ContactFormValues>({
-    resolver: zodResolver(
-      mode === "create" ? createContactSchema : updateContactSchema
-    ) as Resolver<ContactFormValues>,
+    resolver: zodResolver(mode === "create" ? createContactSchema : updateContactSchema) as Resolver<ContactFormValues>,
     defaultValues: emptyValues,
   });
 
@@ -49,8 +50,8 @@ export function ContactFormModal({ open, mode, contact, onOpenChange, onSubmit }
     try {
       await onSubmit(values);
     } catch (error) {
-      if (error instanceof DuplicateEmailError) {
-        setError("email", { message: error.message });
+      if (isConflictError(error)) {
+        setError("email", { message: error.body.message });
         return;
       }
       throw error;
@@ -63,7 +64,7 @@ export function ContactFormModal({ open, mode, contact, onOpenChange, onSubmit }
         <DialogHeader>
           <DialogTitle>{mode === "create" ? "Add Contact" : "Edit Contact"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="flex flex-col gap-4">
+        <form onSubmit={submit} noValidate className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="contact-name">Name</Label>
             <Input id="contact-name" aria-invalid={Boolean(errors.name)} {...register("name")} />

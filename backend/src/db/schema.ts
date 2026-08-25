@@ -10,4 +10,3 @@ export const contacts = sqliteTable("contacts", {
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
-

@@ -30,21 +30,21 @@ export default function ContactsPage() {
   const updateContactMutation = useUpdateContactMutation();
   const deleteContactMutation = useDeleteContactMutation();
 
-  const contacts = contactsQuery.data ?? [];
+  const contacts = contactsQuery.data?.body ?? [];
 
   const handleFormSubmit = async (values: { name: string; email: string; branch: string }) => {
     if (formModal?.mode === "edit") {
-      await updateContactMutation.mutateAsync({ id: formModal.contact.id, input: values });
+      await updateContactMutation.mutateAsync({ params: { id: formModal.contact.id }, body: values });
       showToast("Contact updated successfully.");
     } else {
-      await createContactMutation.mutateAsync(values);
+      await createContactMutation.mutateAsync({ body: values });
       showToast("Contact created successfully.");
     }
     setFormModal(null);
   };
 
   const handleDeleteConfirm = async (contact: Contact) => {
-    await deleteContactMutation.mutateAsync(contact.id);
+    await deleteContactMutation.mutateAsync({ params: { id: contact.id } });
     showToast("Contact deleted successfully.");
     setContactPendingDelete(null);
   };
