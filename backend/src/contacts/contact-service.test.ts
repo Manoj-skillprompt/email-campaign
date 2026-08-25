@@ -104,6 +104,25 @@ describe("ContactService", () => {
     });
   });
 
+  describe("getContactById", () => {
+    it("returns the contact when it exists", async () => {
+      const target = buildContact({ id: "target-id" });
+      const service = new ContactService(createFakeRepository([target]));
+
+      const found = await service.getContactById("target-id");
+
+      expect(found?.id).toBe("target-id");
+    });
+
+    it("returns undefined when the contact does not exist", async () => {
+      const service = new ContactService(createFakeRepository([]));
+
+      const found = await service.getContactById("missing-id");
+
+      expect(found).toBeUndefined();
+    });
+  });
+
   describe("deleteContact", () => {
     it("removes only the targeted contact and leaves unrelated records untouched", async () => {
       const target = buildContact({ id: "target-id", email: "target@example.com" });

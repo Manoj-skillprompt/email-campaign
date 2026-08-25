@@ -31,6 +31,10 @@ export class ContactService {
     return this.repository.findAll(search);
   }
 
+  async getContactById(id: string): Promise<Contact | undefined> {
+    return this.repository.findById(id);
+  }
+
   async updateContact(id: string, input: UpdateContactInput): Promise<Contact> {
     const existing = await this.repository.findById(id);
     if (!existing) {

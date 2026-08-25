@@ -1,9 +1,10 @@
-import { contactsContract } from "@email-campaign-v2/contracts";
+import { contactsContract, groupsContract } from "@email-campaign-v2/contracts";
 import { createExpressEndpoints } from "@ts-rest/express";
 import express from "express";
 import path from "node:path";
 
 import { contactRouter } from "./contacts/contact-router";
+import { groupRouter } from "./groups/group-router";
 
 if (typeof process.loadEnvFile === "function") {
   const possibleEnvPaths = [
@@ -42,6 +43,7 @@ app.get("/health", (req, res) => {
 });
 
 createExpressEndpoints(contactsContract, contactRouter, app);
+createExpressEndpoints(groupsContract, groupRouter, app);
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
 

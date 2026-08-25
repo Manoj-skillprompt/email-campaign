@@ -25,7 +25,7 @@
       "behavior_spec": "features/groups/behavior.md",
       "figma_spec": "features/groups/visuals/figma.md",
       "owner": "groups-team",
-      "dependencies": []
+      "dependencies": [{ "feature": "contacts", "minVersion": "1.0.0" }]
     }
   },
   "archived_features": {}
