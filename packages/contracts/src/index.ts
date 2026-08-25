@@ -1,4 +1,5 @@
 // Shared ts-rest contracts and Zod schemas
+import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 
 export const contactSchema = z.object({
@@ -21,3 +22,55 @@ export type CreateContactInput = z.infer<typeof createContactSchema>;
 
 export const updateContactSchema = createContactSchema.partial();
 export type UpdateContactInput = z.infer<typeof updateContactSchema>;
+
+export const listContactsQuerySchema = z.object({
+  search: z.string().optional(),
+});
+export type ListContactsQuery = z.infer<typeof listContactsQuerySchema>;
+
+export const errorResponseSchema = z.object({
+  message: z.string(),
+});
+
+const c = initContract();
+
+export const contactsContract = c.router({
+  createContact: {
+    method: "POST",
+    path: "/contacts",
+    body: createContactSchema,
+    responses: {
+      201: contactSchema,
+      409: errorResponseSchema,
+    },
+  },
+  listContacts: {
+    method: "GET",
+    path: "/contacts",
+    query: listContactsQuerySchema,
+    responses: {
+      200: z.array(contactSchema),
+    },
+  },
+  updateContact: {
+    method: "PATCH",
+    path: "/contacts/:id",
+    pathParams: z.object({ id: z.string() }),
+    body: updateContactSchema,
+    responses: {
+      200: contactSchema,
+      404: errorResponseSchema,
+      409: errorResponseSchema,
+    },
+  },
+  deleteContact: {
+    method: "DELETE",
+    path: "/contacts/:id",
+    pathParams: z.object({ id: z.string() }),
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
+      404: errorResponseSchema,
+    },
+  },
+});

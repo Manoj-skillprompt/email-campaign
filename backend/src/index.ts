@@ -1,5 +1,9 @@
+import { contactsContract } from "@email-campaign-v2/contracts";
+import { createExpressEndpoints } from "@ts-rest/express";
 import express from "express";
 import path from "node:path";
+
+import { contactRouter } from "./contacts/contact-router";
 
 if (typeof process.loadEnvFile === "function") {
   const possibleEnvPaths = [
@@ -36,6 +40,8 @@ app.use((req, res, next) => {
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+createExpressEndpoints(contactsContract, contactRouter, app);
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
 
