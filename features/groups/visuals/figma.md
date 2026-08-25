@@ -13,7 +13,15 @@
 **Name:** Email Campaign
 
 **URL:**
-https://www.figma.com/design/wXSz455HWRiP6veaCxaTBG/email-campaign?node-id=14-2
+https://www.figma.com/design/wXSz455HWRiP6veaCxaTBG/email-campaign?node-id=0-1&p=f&t=81Pzj4Sv4aH8SMx8-0
+---
+
+## Design References
+
+| Purpose      | Frame         | Link                                                                                                                                                                                                         |
+| ------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Group List   | Groups/List   | https://www.figma.com/design/wXSz455HWRiP6veaCxaTBG/email-campaign?node-id=14-2&t=81Pzj4Sv4aH8SMx8-0                                                                                                         |
+| Create Group | Groups/Create | https://www.figma.com/design/wXSz455HWRiP6veaCxaTBG/email-campaign?node-id=20-66&t=81Pzj4Sv4aH8SMx8-0, https://www.figma.com/design/wXSz455HWRiP6veaCxaTBG/email-campaign?node-id=21-65&t=81Pzj4Sv4aH8SMx8-0 |
 
 ---
 
