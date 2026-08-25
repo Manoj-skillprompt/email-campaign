@@ -37,7 +37,7 @@ export default function CampaignPage() {
   const sendCampaignNowMutation = useSendCampaignNowMutation();
   const deleteCampaignMutation = useDeleteCampaignMutation();
 
-  const campaigns = campaignsQuery.data ?? [];
+  const campaigns = campaignsQuery.data?.body ?? [];
   const groups = groupsQuery.data?.body ?? [];
 
   const campaignsWithAudience: CampaignWithAudience[] = useMemo(
@@ -65,10 +65,11 @@ export default function CampaignPage() {
 
   const persistDraft = async (id: string | null, values: ComposerFormValues): Promise<Campaign> => {
     if (id === null) {
-      const created = await createCampaignMutation.mutateAsync(values);
-      return created;
+      const created = await createCampaignMutation.mutateAsync({ body: values });
+      return created.body;
     }
-    return updateCampaignMutation.mutateAsync({ id, input: values });
+    const updated = await updateCampaignMutation.mutateAsync({ params: { id }, body: values });
+    return updated.body;
   };
 
   const handleSaveDraft = async (id: string | null, values: ComposerFormValues): Promise<Campaign> => {
@@ -83,16 +84,16 @@ export default function CampaignPage() {
     scheduledAt: string
   ): Promise<Campaign> => {
     const saved = await persistDraft(id, values);
-    const scheduled = await scheduleCampaignMutation.mutateAsync({ id: saved.id, scheduledAt });
+    const scheduled = await scheduleCampaignMutation.mutateAsync({ params: { id: saved.id }, body: { scheduledAt } });
     showToast("Campaign scheduled successfully.");
-    return scheduled;
+    return scheduled.body;
   };
 
   const handleSendNow = async (id: string | null, values: ComposerFormValues): Promise<Campaign> => {
     const saved = await persistDraft(id, values);
-    const sent = await sendCampaignNowMutation.mutateAsync(saved.id);
+    const sent = await sendCampaignNowMutation.mutateAsync({ params: { id: saved.id } });
     showToast("Campaign sent successfully.");
-    return sent;
+    return sent.body;
   };
 
   const handleTrash = (campaign: Campaign) => {
@@ -100,7 +101,7 @@ export default function CampaignPage() {
   };
 
   const handleDeleteConfirm = async (campaign: Campaign) => {
-    await deleteCampaignMutation.mutateAsync(campaign.id);
+    await deleteCampaignMutation.mutateAsync({ params: { id: campaign.id } });
     showToast("Campaign deleted successfully.");
     setCampaignPendingDelete(null);
   };

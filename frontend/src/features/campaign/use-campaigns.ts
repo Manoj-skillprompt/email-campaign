@@ -1,29 +1,19 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import type { CampaignStatus, CreateCampaignInput, UpdateCampaignInput } from "./campaign.types";
-import {
-  createCampaign,
-  deleteCampaign,
-  listCampaigns,
-  scheduleCampaign,
-  sendCampaignNow,
-  updateCampaign,
-} from "./campaigns.mock-api";
+import { tsrCampaigns } from "@/lib/api-client";
 
-const campaignsQueryKey = (search?: string, status?: CampaignStatus) =>
-  ["campaigns", { search: search ?? "", status: status ?? "" }] as const;
+import type { CampaignStatus } from "./campaign.types";
 
 export function useCampaignsQuery(search: string, status?: CampaignStatus) {
-  return useQuery({
-    queryKey: campaignsQueryKey(search, status),
-    queryFn: () => listCampaigns({ search, status }),
+  return tsrCampaigns.listCampaigns.useQuery({
+    queryKey: ["campaigns", { search, status: status ?? "" }],
+    queryData: { query: { search: search || undefined, status } },
   });
 }
 
 export function useCreateCampaignMutation() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: CreateCampaignInput) => createCampaign(input),
+  return tsrCampaigns.createCampaign.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
     },
@@ -32,8 +22,7 @@ export function useCreateCampaignMutation() {
 
 export function useUpdateCampaignMutation() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: UpdateCampaignInput }) => updateCampaign(id, input),
+  return tsrCampaigns.updateCampaign.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
     },
@@ -42,8 +31,7 @@ export function useUpdateCampaignMutation() {
 
 export function useScheduleCampaignMutation() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, scheduledAt }: { id: string; scheduledAt: string }) => scheduleCampaign(id, scheduledAt),
+  return tsrCampaigns.scheduleCampaign.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
     },
@@ -52,8 +40,7 @@ export function useScheduleCampaignMutation() {
 
 export function useSendCampaignNowMutation() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => sendCampaignNow(id),
+  return tsrCampaigns.sendCampaignNow.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
     },
@@ -62,8 +49,7 @@ export function useSendCampaignNowMutation() {
 
 export function useDeleteCampaignMutation() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => deleteCampaign(id),
+  return tsrCampaigns.deleteCampaign.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
     },
