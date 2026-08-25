@@ -162,3 +162,124 @@ export const contactsContract = c.router({
     },
   },
 });
+
+export const ALLOWED_SENDERS = [
+  { email: "info@skillprompt.com", label: "Skillprompt <info@skillprompt.com>" },
+  { email: "no-reply@skillprompt.com", label: "Skillprompt Updates <no-reply@skillprompt.com>" },
+  { email: "support@skillprompt.com", label: "Skillprompt Support <support@skillprompt.com>" },
+] as const;
+
+export const campaignStatusSchema = z.enum(["DRAFT", "SCHEDULED", "SENT"]);
+export type CampaignStatus = z.infer<typeof campaignStatusSchema>;
+
+export const campaignSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1),
+  subject: z.string(),
+  senderEmail: z.string(),
+  type: z.literal("EMAIL"),
+  groupIds: z.array(z.string()),
+  content: z.string(),
+  status: campaignStatusSchema,
+  scheduledAt: z.string().nullable(),
+  sentAt: z.string().nullable(),
+  sentCount: z.number(),
+  openRate: z.number(),
+  clickRate: z.number(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type Campaign = z.infer<typeof campaignSchema>;
+
+export const createCampaignSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  subject: z.string().optional(),
+  senderEmail: z.string().optional(),
+  groupIds: z.array(z.string()).optional(),
+  content: z.string().optional(),
+});
+export type CreateCampaignInput = z.infer<typeof createCampaignSchema>;
+
+export const updateCampaignSchema = z.object({
+  name: z.string().min(1, "Name is required").optional(),
+  subject: z.string().optional(),
+  senderEmail: z.string().optional(),
+  groupIds: z.array(z.string()).optional(),
+  content: z.string().optional(),
+});
+export type UpdateCampaignInput = z.infer<typeof updateCampaignSchema>;
+
+export const scheduleCampaignSchema = z.object({
+  scheduledAt: z.string().min(1, "Scheduled date/time is required"),
+});
+export type ScheduleCampaignInput = z.infer<typeof scheduleCampaignSchema>;
+
+export const listCampaignsQuerySchema = z.object({
+  search: z.string().optional(),
+  status: campaignStatusSchema.optional(),
+});
+export type ListCampaignsQuery = z.infer<typeof listCampaignsQuerySchema>;
+
+export const campaignsContract = c.router({
+  createCampaign: {
+    method: "POST",
+    path: "/campaigns",
+    body: createCampaignSchema,
+    responses: {
+      201: campaignSchema,
+    },
+  },
+  listCampaigns: {
+    method: "GET",
+    path: "/campaigns",
+    query: listCampaignsQuerySchema,
+    responses: {
+      200: z.array(campaignSchema),
+    },
+  },
+  updateCampaign: {
+    method: "PATCH",
+    path: "/campaigns/:id",
+    pathParams: z.object({ id: z.string() }),
+    body: updateCampaignSchema,
+    responses: {
+      200: campaignSchema,
+      404: errorResponseSchema,
+      409: errorResponseSchema,
+    },
+  },
+  scheduleCampaign: {
+    method: "POST",
+    path: "/campaigns/:id/schedule",
+    pathParams: z.object({ id: z.string() }),
+    body: scheduleCampaignSchema,
+    responses: {
+      200: campaignSchema,
+      404: errorResponseSchema,
+      400: errorResponseSchema,
+      409: errorResponseSchema,
+    },
+  },
+  sendCampaignNow: {
+    method: "POST",
+    path: "/campaigns/:id/send",
+    pathParams: z.object({ id: z.string() }),
+    body: c.noBody(),
+    responses: {
+      200: campaignSchema,
+      404: errorResponseSchema,
+      400: errorResponseSchema,
+      409: errorResponseSchema,
+    },
+  },
+  deleteCampaign: {
+    method: "DELETE",
+    path: "/campaigns/:id",
+    pathParams: z.object({ id: z.string() }),
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
+      404: errorResponseSchema,
+    },
+  },
+});

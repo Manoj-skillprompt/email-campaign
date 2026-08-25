@@ -10,15 +10,15 @@
 
 ## 1. FDS Acceptance Criteria
 
-| Criterion                                                                                                                   | Result   | Evidence                                                                                                                                                |
-| :---------------------------------------------------------------------------------------------------------------------------- | :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **REQ-GRP-01** Create Group — validates `name`, enforces name uniqueness, returns created `Group` with empty `contactIds`  | **PASS** | `group-service.test.ts` (empty `contactIds`, duplicate rejection); `group-router.test.ts` (201/409); E2E "Create Group"                                 |
-| **REQ-GRP-02** View & List Groups — displays all groups with Name and Contact Count                                        | **PASS** | `group-grid.test.tsx` (name + "N contacts matched" render); visual check against Figma frame `14:2`. Implemented as a card grid, not a table — see §6.1 |
-| **REQ-GRP-03** Search Groups — case-insensitive by `name`, updates dynamically without navigation                          | **PASS** | `group-repository.test.ts` (case-insensitive name match); E2E "Search"                                                                                  |
-| **REQ-GRP-04** Edit Group — updates `name`, enforces uniqueness on update                                                   | **PASS** | `group-service.test.ts` (duplicate-on-rename, not-found); `group-router.test.ts` (200/404/409); E2E "Edit Group", E2E "Duplicate name" (edit path)      |
-| **REQ-GRP-05** Delete Group — permanent removal on confirmation; member contacts unassigned but not deleted                 | **PASS** | `group-service.test.ts` (delete removes the group row; membership lives only there); E2E "Delete Group" (assigns a member, deletes the group, confirms the contact still exists on `/contacts`) |
-| **REQ-GRP-06** Assign/Unassign Contact — a contact belongs to at most one group; assigning moves it out of any prior group  | **PASS** | `group-service.test.ts` (move semantics, idempotent re-assign, not-found errors); `group-router.test.ts` (200/404, cross-group move); `group-membership-view.test.tsx`; `group-create-modal.test.tsx`; E2E "Manage Group Membership"                |
-| **Validation Rules** (§4) — required `name`, duplicate-name conflict, referenced `contactId` must exist                    | **PASS** | `group-form-modal.test.tsx` / `group-create-modal.test.tsx` (blocks submission, preserves values); `group-router.test.ts` (400 invalid payload, 404 on missing contact) |
+| Criterion                                                                                                                  | Result   | Evidence                                                                                                                                                                                                                             |
+| :------------------------------------------------------------------------------------------------------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **REQ-GRP-01** Create Group — validates `name`, enforces name uniqueness, returns created `Group` with empty `contactIds`  | **PASS** | `group-service.test.ts` (empty `contactIds`, duplicate rejection); `group-router.test.ts` (201/409); E2E "Create Group"                                                                                                              |
+| **REQ-GRP-02** View & List Groups — displays all groups with Name and Contact Count                                        | **PASS** | `group-grid.test.tsx` (name + "N contacts matched" render); visual check against Figma frame `14:2`. Implemented as a card grid, not a table — see §6.1                                                                              |
+| **REQ-GRP-03** Search Groups — case-insensitive by `name`, updates dynamically without navigation                          | **PASS** | `group-repository.test.ts` (case-insensitive name match); E2E "Search"                                                                                                                                                               |
+| **REQ-GRP-04** Edit Group — updates `name`, enforces uniqueness on update                                                  | **PASS** | `group-service.test.ts` (duplicate-on-rename, not-found); `group-router.test.ts` (200/404/409); E2E "Edit Group", E2E "Duplicate name" (edit path)                                                                                   |
+| **REQ-GRP-05** Delete Group — permanent removal on confirmation; member contacts unassigned but not deleted                | **PASS** | `group-service.test.ts` (delete removes the group row; membership lives only there); E2E "Delete Group" (assigns a member, deletes the group, confirms the contact still exists on `/contacts`)                                      |
+| **REQ-GRP-06** Assign/Unassign Contact — a contact belongs to at most one group; assigning moves it out of any prior group | **PASS** | `group-service.test.ts` (move semantics, idempotent re-assign, not-found errors); `group-router.test.ts` (200/404, cross-group move); `group-membership-view.test.tsx`; `group-create-modal.test.tsx`; E2E "Manage Group Membership" |
+| **Validation Rules** (§4) — required `name`, duplicate-name conflict, referenced `contactId` must exist                    | **PASS** | `group-form-modal.test.tsx` / `group-create-modal.test.tsx` (blocks submission, preserves values); `group-router.test.ts` (400 invalid payload, 404 on missing contact)                                                              |
 
 All FDS Section 3 functional requirements are met. Section 4 validation rules are enforced both client-side (Zod + React Hook Form) and server-side (Zod on the ts-rest contract, authoritative per `rules/architecture.md`).
 
@@ -36,7 +36,7 @@ All three frames were compared directly against the implementation across severa
 
 **Documented, approved deviations** (explicit user decisions during Build):
 
-1. **Header/title placement** — the raw Figma capture for `14:2` renders the "Groups" title and "+ Create Group" button *below* the card grid. Per explicit user instruction, this was overridden to place the header at the top of the page (matching the `contacts` page's convention), rather than matching the literal capture.
+1. **Header/title placement** — the raw Figma capture for `14:2` renders the "Groups" title and "+ Create Group" button _below_ the card grid. Per explicit user instruction, this was overridden to place the header at the top of the page (matching the `contacts` page's convention), rather than matching the literal capture.
 2. **"Add Automatically" (dynamic filtering)** — visually present on Create Group Step 1, matching Figma exactly, but non-interactive (`aria-disabled`, no click handler). No requirement in the FDS backs dynamic/automatic segmentation; only "Add Manually" is wired to real behavior. Confirmed intentional scope boundary, not a defect.
 3. **Search input on the Group List page** — not present in the Figma `14:2` capture at all (`figma.md` itself flags this). Implemented per REQ-GRP-03/`behavior.md`, which both explicitly require it; `figma.md`'s own precedence note ("If the Figma design conflicts with the FDS, the FDS takes precedence for business behavior") supports this. Placement (a slim bar above the grid) was not dictated by any frame.
 
@@ -46,27 +46,27 @@ All three frames were compared directly against the implementation across severa
 
 Every test listed in the plan's Testing section (§2.5) exists and passes, re-run fresh in this validation pass.
 
-| Plan item | Description                                                                          | Status       |
-| :-------- | :------------------------------------------------------------------------------------- | :----------- |
-| 2.5.1     | Regression: `contact-service.getContactById`                                          | ✅ pass (part of 9/9 in `contact-service.test.ts`) |
-| 2.5.2     | `group-service` unit tests (duplicate name, move semantics, unassign, delete)         | ✅ 13/13 pass |
-| 2.5.3     | `group-repository` tests against real test SQLite (CRUD, case-insensitive search, `findByContactId`) | ✅ 7/7 pass   |
-| 2.5.4     | `groupsContract` router/integration tests (status codes, error mapping, assign/unassign) | ✅ 15/15 pass |
-| 2.5.5     | Regression: full existing `contacts` backend suite                                    | ✅ 24/24 pass |
-| 2.5.6     | `GroupFormModal` validation/preservation component test (edit mode — see §6.2)         | ✅ 5/5 pass   |
-| 2.5.7     | `GroupCard`/`GroupGrid` rendering component test                                       | ✅ 3/3 pass   |
-| 2.5.8     | `GroupSearchBar` component test                                                        | ✅ 2/2 pass   |
-| 2.5.9     | `GroupDeleteDialog` confirm/cancel component test                                      | ✅ 3/3 pass   |
-| 2.5.10    | `GroupMembershipView` assign/unassign component test                                   | ✅ 5/5 pass   |
-| 2.5.11    | Regression: full existing `contacts` frontend suite                                    | ✅ 11/11 pass |
-| —         | `GroupCreateModal` component test (not in original plan — added to cover the 2-step create wizard built after the plan; see §6.2) | ✅ 7/7 pass   |
-| 2.5.12    | E2E Create Group flow (adapted to the actual 2-step wizard — see §6.2)                | ✅ pass       |
-| 2.5.13    | E2E Edit Group flow                                                                    | ✅ pass       |
-| 2.5.14    | E2E Delete Group flow (incl. member unassignment, contact survives)                   | ✅ pass       |
-| 2.5.15    | E2E Manage Group Membership flow (cross-group move, unassign)                         | ✅ pass       |
-| 2.5.16    | E2E Search flow + empty-state action                                                  | ✅ pass       |
-| 2.5.17    | E2E Duplicate name (create + edit)                                                     | ✅ pass       |
-| 2.5.18    | Coverage ≥ 80% for the groups feature                                                 | ⚠️ see below  |
+| Plan item | Description                                                                                                                       | Status                                             |
+| :-------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------- |
+| 2.5.1     | Regression: `contact-service.getContactById`                                                                                      | ✅ pass (part of 9/9 in `contact-service.test.ts`) |
+| 2.5.2     | `group-service` unit tests (duplicate name, move semantics, unassign, delete)                                                     | ✅ 13/13 pass                                      |
+| 2.5.3     | `group-repository` tests against real test SQLite (CRUD, case-insensitive search, `findByContactId`)                              | ✅ 7/7 pass                                        |
+| 2.5.4     | `groupsContract` router/integration tests (status codes, error mapping, assign/unassign)                                          | ✅ 15/15 pass                                      |
+| 2.5.5     | Regression: full existing `contacts` backend suite                                                                                | ✅ 24/24 pass                                      |
+| 2.5.6     | `GroupFormModal` validation/preservation component test (edit mode — see §6.2)                                                    | ✅ 5/5 pass                                        |
+| 2.5.7     | `GroupCard`/`GroupGrid` rendering component test                                                                                  | ✅ 3/3 pass                                        |
+| 2.5.8     | `GroupSearchBar` component test                                                                                                   | ✅ 2/2 pass                                        |
+| 2.5.9     | `GroupDeleteDialog` confirm/cancel component test                                                                                 | ✅ 3/3 pass                                        |
+| 2.5.10    | `GroupMembershipView` assign/unassign component test                                                                              | ✅ 5/5 pass                                        |
+| 2.5.11    | Regression: full existing `contacts` frontend suite                                                                               | ✅ 11/11 pass                                      |
+| —         | `GroupCreateModal` component test (not in original plan — added to cover the 2-step create wizard built after the plan; see §6.2) | ✅ 7/7 pass                                        |
+| 2.5.12    | E2E Create Group flow (adapted to the actual 2-step wizard — see §6.2)                                                            | ✅ pass                                            |
+| 2.5.13    | E2E Edit Group flow                                                                                                               | ✅ pass                                            |
+| 2.5.14    | E2E Delete Group flow (incl. member unassignment, contact survives)                                                               | ✅ pass                                            |
+| 2.5.15    | E2E Manage Group Membership flow (cross-group move, unassign)                                                                     | ✅ pass                                            |
+| 2.5.16    | E2E Search flow + empty-state action                                                                                              | ✅ pass                                            |
+| 2.5.17    | E2E Duplicate name (create + edit)                                                                                                | ✅ pass                                            |
+| 2.5.18    | Coverage ≥ 80% for the groups feature                                                                                             | ⚠️ see below                                       |
 
 **Totals:** Backend 59/59 (contacts 24 + groups 35) · Frontend 36/36 (contacts 11 + groups 25) · E2E 12/12 (contacts 5 + groups 7) · **107/107 automated tests passing**, 0 failures.
 
@@ -95,13 +95,13 @@ No architecture violations found.
 
 ## 5. Automated Checks
 
-| Check                                                | Result                                                                                                                                                                                                                                             |
-| :---------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ESLint (`pnpm lint`)                                 | ✅ 0 errors (6 pre-existing warnings, only in gitignored `coverage/` report artifacts, not source)                                                                                                                                                |
-| TypeScript (`pnpm typecheck`, all 3 packages)        | ✅ 0 errors                                                                                                                                                                                                                                        |
-| Backend unit/integration tests                       | ✅ 59/59                                                                                                                                                                                                                                           |
-| Frontend unit/component tests                        | ✅ 36/36                                                                                                                                                                                                                                           |
-| E2E tests (Playwright)                               | ✅ 12/12                                                                                                                                                                                                                                           |
+| Check                                                | Result                                                                                                                                                                                                                                           |
+| :--------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ESLint (`pnpm lint`)                                 | ✅ 0 errors (6 pre-existing warnings, only in gitignored `coverage/` report artifacts, not source)                                                                                                                                               |
+| TypeScript (`pnpm typecheck`, all 3 packages)        | ✅ 0 errors                                                                                                                                                                                                                                      |
+| Backend unit/integration tests                       | ✅ 59/59                                                                                                                                                                                                                                         |
+| Frontend unit/component tests                        | ✅ 36/36                                                                                                                                                                                                                                         |
+| E2E tests (Playwright)                               | ✅ 12/12                                                                                                                                                                                                                                         |
 | SonarQube (Static Analysis Gate / Full Quality Gate) | ⚠️ **Not run** — no SonarQube server or scanner is configured in this environment (no `sonar-project.properties`, no `sonar-scanner` on `PATH`, no `SONAR_*` env vars). Same outstanding item already noted in the `contacts` validation report. |
 
 ---

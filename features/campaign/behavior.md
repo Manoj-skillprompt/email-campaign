@@ -30,5 +30,3 @@
 - Selecting **Trash** opens a confirmation dialog warning of permanent removal.
 - Confirmation permanently removes the campaign and displays a success notification.
 - Cancelling performs no action.
-
- 

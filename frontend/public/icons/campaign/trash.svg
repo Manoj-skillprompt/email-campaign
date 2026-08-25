@@ -1,0 +1,11 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Trash Icon">
+<path id="Vector" d="M2 3H12" stroke="#374151" stroke-width="1.1" stroke-linecap="round"/>
+<g id="Rectangle">
+<mask id="path-2-inside-1_0_11" fill="white">
+<rect x="3.5" y="4.5" width="7" height="7" rx="1"/>
+</mask>
+<rect x="3.5" y="4.5" width="7" height="7" rx="1" stroke="#374151" stroke-width="2.2" mask="url(#path-2-inside-1_0_11)"/>
+</g>
+</g>
+</svg>

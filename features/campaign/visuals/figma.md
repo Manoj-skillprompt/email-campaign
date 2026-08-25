@@ -29,4 +29,3 @@ https://www.figma.com/design/wXSz455HWRiP6veaCxaTBG/email-campaign?node-id=0-1&p
 
 - These links are the authoritative visual design for this feature.
 - Business behavior is defined by the FDS.
- 

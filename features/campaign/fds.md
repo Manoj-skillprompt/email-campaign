@@ -94,4 +94,3 @@ Provide capability to compose, schedule, and send email campaigns to one or more
 - `scheduleCampaign(id: string, scheduledAt: string): Promise<Campaign>`
 - `sendCampaignNow(id: string): Promise<Campaign>`
 - `deleteCampaign(id: string): Promise<void>`
- 
