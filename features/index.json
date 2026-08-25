@@ -26,6 +26,21 @@
       "figma_spec": "features/groups/visuals/figma.md",
       "owner": "groups-team",
       "dependencies": [{ "feature": "contacts", "minVersion": "1.0.0" }]
+    },
+    "campaign": {
+      "id": "campaign",
+      "title": "Campaigns Management",
+      "domain": "campaign",
+      "status": "active",
+      "version": "1.0.0",
+      "path": "features/campaign/fds.md",
+      "behavior_spec": "features/campaign/behavior.md",
+      "figma_spec": "features/campaign/visuals/figma.md",
+      "owner": "campaign-team",
+      "dependencies": [
+        { "feature": "contacts", "minVersion": "1.0.0" },
+        { "feature": "groups", "minVersion": "1.0.0" }
+      ]
     }
   },
   "archived_features": {}
