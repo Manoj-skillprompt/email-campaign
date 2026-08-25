@@ -15,6 +15,13 @@
       "when": 1787649920716,
       "tag": "0001_nasty_the_watchers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787658077391,
+      "tag": "0002_whole_lockheed",
+      "breakpoints": true
     }
   ]
 }

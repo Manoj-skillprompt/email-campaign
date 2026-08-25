@@ -147,6 +147,25 @@ describe("GroupService", () => {
     });
   });
 
+  describe("getGroupById", () => {
+    it("returns the group when it exists", async () => {
+      const target = buildGroup({ id: "target-id" });
+      const service = buildService([target]);
+
+      const found = await service.getGroupById("target-id");
+
+      expect(found?.id).toBe("target-id");
+    });
+
+    it("returns undefined when the group does not exist", async () => {
+      const service = buildService();
+
+      const found = await service.getGroupById("missing-id");
+
+      expect(found).toBeUndefined();
+    });
+  });
+
   describe("deleteGroup", () => {
     it("removes the group", async () => {
       const target = buildGroup({ id: "target-id" });

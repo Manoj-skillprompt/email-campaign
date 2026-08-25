@@ -34,6 +34,10 @@ export class GroupService {
     return this.repository.findAll(search);
   }
 
+  async getGroupById(id: string): Promise<Group | undefined> {
+    return this.repository.findById(id);
+  }
+
   async updateGroup(id: string, input: UpdateGroupInput): Promise<Group> {
     const existing = await this.repository.findById(id);
     if (!existing) {
