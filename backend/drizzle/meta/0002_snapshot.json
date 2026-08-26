@@ -178,16 +178,12 @@
       "indexes": {
         "contacts_client_id_unique": {
           "name": "contacts_client_id_unique",
-          "columns": [
-            "client_id"
-          ],
+          "columns": ["client_id"],
           "isUnique": true
         },
         "contacts_email_unique": {
           "name": "contacts_email_unique",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         }
       },
@@ -237,9 +233,7 @@
       "indexes": {
         "groups_name_unique": {
           "name": "groups_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },

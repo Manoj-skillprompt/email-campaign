@@ -1,8 +1,19 @@
 import type { Contact, CreateContactInput, UpdateContactInput } from "@email-campaign-v2/contracts";
-import { randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 
 import { ContactNotFoundError, DuplicateEmailError } from "./contact-errors";
 import { contactRepository, type ContactRepository } from "./contact-repository";
+
+export function generateUniqueClientId(
+  usedClientIds: Set<string>,
+  randomFn: () => number = () => randomInt(0, 10000)
+): string {
+  let clientId: string;
+  do {
+    clientId = randomFn().toString().padStart(4, "0");
+  } while (usedClientIds.has(clientId));
+  return clientId;
+}
 
 export class ContactService {
   constructor(private readonly repository: ContactRepository = contactRepository) {}
@@ -13,10 +24,13 @@ export class ContactService {
       throw new DuplicateEmailError(input.email);
     }
 
+    const existingContacts = await this.repository.findAll();
+    const usedClientIds = new Set(existingContacts.map((contact) => contact.clientId));
+
     const now = new Date().toISOString();
     const contact: Contact = {
       id: randomUUID(),
-      clientId: `LOCAL-${randomUUID()}`,
+      clientId: generateUniqueClientId(usedClientIds),
       name: input.name,
       email: input.email,
       branch: input.branch,

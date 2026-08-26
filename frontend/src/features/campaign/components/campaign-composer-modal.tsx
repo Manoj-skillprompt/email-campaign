@@ -28,6 +28,10 @@ function toFormValues(campaign: Campaign | null): ComposerFormValues {
   };
 }
 
+function isApiError(error: unknown): error is { status: number; body: { message: string } } {
+  return typeof error === "object" && error !== null && "status" in error && "body" in error;
+}
+
 function isFullyValid(values: ComposerFormValues): boolean {
   return (
     values.name.trim().length > 0 &&
@@ -110,6 +114,8 @@ export function CampaignComposerModal({
       const saved = await onSaveDraft(persisted?.id ?? null, values);
       setPersisted(saved);
       close();
+    } catch (error) {
+      setError(isApiError(error) ? error.body.message : "Could not save this campaign as a draft.");
     } finally {
       setIsSaving(false);
     }
@@ -130,6 +136,8 @@ export function CampaignComposerModal({
       const saved = await onSchedule(persisted?.id ?? null, values, new Date(scheduledAt).toISOString());
       setPersisted(saved);
       close();
+    } catch (error) {
+      setError(isApiError(error) ? error.body.message : "Could not schedule this campaign.");
     } finally {
       setIsSaving(false);
     }
@@ -146,6 +154,8 @@ export function CampaignComposerModal({
       const saved = await onSendNow(persisted?.id ?? null, values);
       setPersisted(saved);
       close();
+    } catch (error) {
+      setError(isApiError(error) ? error.body.message : "Could not send this campaign.");
     } finally {
       setIsSaving(false);
     }

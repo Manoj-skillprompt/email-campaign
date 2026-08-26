@@ -23,7 +23,7 @@ Provide capability to manage individual client contacts within the internal appl
 ## 2. Data Model (`Contact`)
 
 - `id`: string (UUID, Primary Key)
-- `clientId`: string (Unique, auto-generated, e.g. `LOCAL-<uuid>`)
+- `clientId`: string (Unique, auto-generated, random 4-digit number, e.g. `4821`)
 - `name`: string (Required, non-empty)
 - `email`: string (Required, valid format, Unique)
 - `branch`: string (Required, non-empty)
@@ -36,12 +36,13 @@ Provide capability to manage individual client contacts within the internal appl
 
 - Must validate `name`, `email`, and `branch`.
 - Email address must be unique across all contacts.
-- System automatically generates a unique `clientId` (e.g. `LOCAL-<uuid>`).
+- System automatically generates a unique `clientId` as a random 4-digit number (e.g. `4821`).
 - Returns the created `Contact` object.
 
 ### REQ-CON-02: View & List Contacts
 
-- Displays all contacts in tabular format with Client ID, Name, Email, Branch, Date Added.
+- Displays all contacts in tabular format with Client ID, Name, Email, Branch, Group, Date Added.
+- The Group column shows the name of the group the contact belongs to, or `—` if the contact is not a member of any group.
 
 ### REQ-CON-03: Search Contacts
 

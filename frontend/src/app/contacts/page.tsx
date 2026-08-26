@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -9,13 +9,14 @@ import { ContactEmptyState } from "@/features/contacts/components/contact-empty-
 import { ContactFormModal } from "@/features/contacts/components/contact-form-modal";
 import { ContactSearchBar } from "@/features/contacts/components/contact-search-bar";
 import { ContactTable } from "@/features/contacts/components/contact-table";
-import type { Contact } from "@/features/contacts/contact.types";
+import type { Contact, ContactWithGroup } from "@/features/contacts/contact.types";
 import {
   useContactsQuery,
   useCreateContactMutation,
   useDeleteContactMutation,
   useUpdateContactMutation,
 } from "@/features/contacts/use-contacts";
+import { useGroupsQuery } from "@/features/groups/use-groups";
 
 type FormModalState = { mode: "create" } | { mode: "edit"; contact: Contact } | null;
 
@@ -26,11 +27,26 @@ export default function ContactsPage() {
 
   const { showToast } = useToast();
   const contactsQuery = useContactsQuery(search);
+  const groupsQuery = useGroupsQuery("");
   const createContactMutation = useCreateContactMutation();
   const updateContactMutation = useUpdateContactMutation();
   const deleteContactMutation = useDeleteContactMutation();
 
   const contacts = contactsQuery.data?.body ?? [];
+  const groups = groupsQuery.data?.body ?? [];
+
+  const contactsWithGroup: ContactWithGroup[] = useMemo(
+    () =>
+      contacts.map((contact) => ({
+        ...contact,
+        groupLabel:
+          groups
+            .filter((group) => group.contactIds.includes(contact.id))
+            .map((group) => group.name)
+            .join(", ") || "—",
+      })),
+    [contacts, groups]
+  );
 
   const handleFormSubmit = async (values: { name: string; email: string; branch: string }) => {
     if (formModal?.mode === "edit") {
@@ -69,7 +85,7 @@ export default function ContactsPage() {
 
         {contacts.length > 0 ? (
           <ContactTable
-            contacts={contacts}
+            contacts={contactsWithGroup}
             onEdit={(contact) => setFormModal({ mode: "edit", contact })}
             onDelete={(contact) => setContactPendingDelete(contact)}
           />

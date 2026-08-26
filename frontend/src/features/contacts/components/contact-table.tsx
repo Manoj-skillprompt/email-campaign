@@ -1,4 +1,4 @@
-import type { Contact } from "../contact.types";
+import type { ContactWithGroup } from "../contact.types";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "numeric",
@@ -11,9 +11,9 @@ function initialOf(name: string): string {
 }
 
 interface ContactTableProps {
-  contacts: Contact[];
-  onEdit: (contact: Contact) => void;
-  onDelete: (contact: Contact) => void;
+  contacts: ContactWithGroup[];
+  onEdit: (contact: ContactWithGroup) => void;
+  onDelete: (contact: ContactWithGroup) => void;
 }
 
 export function ContactTable({ contacts, onEdit, onDelete }: ContactTableProps) {
@@ -25,6 +25,7 @@ export function ContactTable({ contacts, onEdit, onDelete }: ContactTableProps) 
           <th className="w-[180px] px-4 py-3 text-xs font-bold uppercase text-foreground-muted">Name</th>
           <th className="w-[240px] px-4 py-3 text-xs font-bold uppercase text-foreground-muted">Email</th>
           <th className="w-[180px] px-4 py-3 text-xs font-bold uppercase text-foreground-muted">Branch</th>
+          <th className="w-[160px] px-4 py-3 text-xs font-bold uppercase text-foreground-muted">Group</th>
           <th className="w-[120px] px-4 py-3 text-xs font-bold uppercase text-foreground-muted">Date Added</th>
           <th className="w-[100px] px-4 py-3 text-xs font-bold uppercase text-foreground-muted">
             <span className="sr-only">Actions</span>
@@ -55,6 +56,7 @@ export function ContactTable({ contacts, onEdit, onDelete }: ContactTableProps) 
                 <span className="text-sm text-foreground">{contact.branch}</span>
               </div>
             </td>
+            <td className="px-4 py-4 text-sm text-foreground-muted">{contact.groupLabel}</td>
             <td className="px-4 py-4 text-sm text-foreground-muted">
               {dateFormatter.format(new Date(contact.createdAt))}
             </td>

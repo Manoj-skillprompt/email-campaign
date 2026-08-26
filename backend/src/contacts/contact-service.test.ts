@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { ContactNotFoundError, DuplicateEmailError } from "./contact-errors";
 import type { ContactRepository } from "./contact-repository";
-import { ContactService } from "./contact-service";
+import { ContactService, generateUniqueClientId } from "./contact-service";
 
 function buildContact(overrides: Partial<Contact> = {}): Contact {
   return {
@@ -52,7 +52,7 @@ function createFakeRepository(initialContacts: Contact[] = []): ContactRepositor
 
 describe("ContactService", () => {
   describe("createContact", () => {
-    it("generates a clientId in LOCAL-<uuid> format and persists the contact", async () => {
+    it("generates a random 4-digit clientId and persists the contact", async () => {
       const service = new ContactService(createFakeRepository());
 
       const created = await service.createContact({
@@ -61,7 +61,7 @@ describe("ContactService", () => {
         branch: "London",
       });
 
-      expect(created.clientId).toMatch(/^LOCAL-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+      expect(created.clientId).toMatch(/^\d{4}$/);
       expect(created.id).toBeTruthy();
       expect(created.createdAt).toBe(created.updatedAt);
       expect(created.name).toBe("Ada Lovelace");
@@ -74,6 +74,20 @@ describe("ContactService", () => {
       await expect(
         service.createContact({ name: "New Person", email: "taken@example.com", branch: "Anywhere" })
       ).rejects.toThrow(DuplicateEmailError);
+    });
+  });
+
+  describe("generateUniqueClientId", () => {
+    it("retries generation when the random value collides with an already-used clientId", () => {
+      const usedClientIds = new Set(["1234"]);
+      const values = [1234, 5678];
+      const randomFn = () => values.shift()!;
+
+      expect(generateUniqueClientId(usedClientIds, randomFn)).toBe("5678");
+    });
+
+    it("pads single-digit values to 4 digits", () => {
+      expect(generateUniqueClientId(new Set(), () => 7)).toBe("0007");
     });
   });
 

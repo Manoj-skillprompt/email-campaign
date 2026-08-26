@@ -73,7 +73,7 @@ describe("contacts router", () => {
       expect(response.status).toBe(201);
       const body = await response.json();
       expect(body.name).toBe("Grace Hopper");
-      expect(body.clientId).toMatch(/^LOCAL-/);
+      expect(body.clientId).toMatch(/^\d{4}$/);
     });
 
     it("returns 409 when the email is already taken", async () => {
