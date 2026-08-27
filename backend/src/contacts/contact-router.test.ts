@@ -99,20 +99,66 @@ describe("contacts router", () => {
   });
 
   describe("GET /contacts", () => {
-    it("returns 200 with all contacts, filtered by search when provided", async () => {
+    it("returns 200 with a paginated envelope, filtered by search when provided", async () => {
       await createContactViaApi({ name: "Findable Person", branch: "Kathmandu" });
       await createContactViaApi({ name: "Someone Else", branch: "Pokhara" });
 
       const all = await fetch(`${baseUrl}/contacts`);
       expect(all.status).toBe(200);
-      expect(await all.json()).toHaveLength(2);
+      const allBody = await all.json();
+      expect(allBody.data).toHaveLength(2);
+      expect(allBody).toMatchObject({ page: 1, pageSize: 10, total: 2, totalPages: 1 });
 
       const filtered = await fetch(`${baseUrl}/contacts?search=findable`);
       expect(filtered.status).toBe(200);
       const filteredBody = await filtered.json();
-      expect(filteredBody).toHaveLength(1);
-      expect(filteredBody[0].name).toBe("Findable Person");
+      expect(filteredBody.data).toHaveLength(1);
+      expect(filteredBody.data[0].name).toBe("Findable Person");
+      expect(filteredBody).toMatchObject({ total: 1, totalPages: 1 });
     });
+
+    it("paginates results using page and pageSize", async () => {
+      for (let i = 0; i < 3; i += 1) {
+        await createContactViaApi({ name: `Contact ${i}` });
+      }
+
+      const firstPage = await fetch(`${baseUrl}/contacts?page=1&pageSize=2`);
+      const firstBody = await firstPage.json();
+      expect(firstBody.data).toHaveLength(2);
+      expect(firstBody).toMatchObject({ page: 1, pageSize: 2, total: 3, totalPages: 2 });
+
+      const secondPage = await fetch(`${baseUrl}/contacts?page=2&pageSize=2`);
+      const secondBody = await secondPage.json();
+      expect(secondBody.data).toHaveLength(1);
+      expect(secondBody).toMatchObject({ page: 2, pageSize: 2, total: 3, totalPages: 2 });
+    });
+
+    it("returns an empty data array, not an error, when page is beyond totalPages", async () => {
+      await createContactViaApi();
+
+      const response = await fetch(`${baseUrl}/contacts?page=5&pageSize=10`);
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.data).toEqual([]);
+      expect(body.total).toBe(1);
+    });
+
+    it.each(["page=0", "page=-1", "page=1.5", "page=abc"])(
+      "returns 400 for an invalid page value (%s)",
+      async (queryParam) => {
+        const response = await fetch(`${baseUrl}/contacts?${queryParam}`);
+        expect(response.status).toBe(400);
+      }
+    );
+
+    it.each(["pageSize=0", "pageSize=101", "pageSize=abc"])(
+      "returns 400 for an invalid pageSize value (%s)",
+      async (queryParam) => {
+        const response = await fetch(`${baseUrl}/contacts?${queryParam}`);
+        expect(response.status).toBe(400);
+      }
+    );
   });
 
   describe("PATCH /contacts/:id", () => {

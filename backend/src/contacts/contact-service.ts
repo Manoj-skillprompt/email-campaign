@@ -1,4 +1,4 @@
-import type { Contact, CreateContactInput, UpdateContactInput } from "@email-campaign-v2/contracts";
+import type { Contact, CreateContactInput, PaginatedContacts, UpdateContactInput } from "@email-campaign-v2/contracts";
 import { randomInt, randomUUID } from "node:crypto";
 
 import { ContactNotFoundError, DuplicateEmailError } from "./contact-errors";
@@ -41,8 +41,12 @@ export class ContactService {
     return this.repository.create(contact);
   }
 
-  async listContacts(search?: string): Promise<Contact[]> {
-    return this.repository.findAll(search);
+  async listContacts(options: { search?: string; page: number; pageSize: number }): Promise<PaginatedContacts> {
+    const { search, page, pageSize } = options;
+    const { data, total } = await this.repository.findPage({ search, page, pageSize });
+    const totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);
+
+    return { data, page, pageSize, total, totalPages };
   }
 
   async getContactById(id: string): Promise<Contact | undefined> {

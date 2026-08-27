@@ -121,4 +121,47 @@ describe("ContactRepository", () => {
     expect(await repository.findById(target.id)).toBeUndefined();
     expect(await repository.findById(other.id)).toEqual(other);
   });
+
+  describe("findPage", () => {
+    it("returns the requested page slice and the total matching count", async () => {
+      for (let i = 0; i < 5; i += 1) {
+        await repository.create(buildContact({ name: `Contact ${i}`, createdAt: `2026-01-0${i + 1}T00:00:00.000Z` }));
+      }
+
+      const firstPage = await repository.findPage({ page: 1, pageSize: 2 });
+      expect(firstPage.data).toHaveLength(2);
+      expect(firstPage.total).toBe(5);
+
+      const secondPage = await repository.findPage({ page: 2, pageSize: 2 });
+      expect(secondPage.data).toHaveLength(2);
+      expect(secondPage.total).toBe(5);
+
+      const thirdPage = await repository.findPage({ page: 3, pageSize: 2 });
+      expect(thirdPage.data).toHaveLength(1);
+      expect(thirdPage.total).toBe(5);
+    });
+
+    it("applies pagination after the search filter", async () => {
+      const match = buildContact({ name: "Findable One", branch: "Kathmandu" });
+      const otherMatch = buildContact({ name: "Findable Two", branch: "Kathmandu" });
+      const noMatch = buildContact({ name: "Excluded", branch: "Pokhara" });
+      await repository.create(match);
+      await repository.create(otherMatch);
+      await repository.create(noMatch);
+
+      const page = await repository.findPage({ search: "findable", page: 1, pageSize: 10 });
+
+      expect(page.total).toBe(2);
+      expect(page.data.map((c) => c.id).sort()).toEqual([match.id, otherMatch.id].sort());
+    });
+
+    it("returns an empty data array, not an error, for a page beyond the available results", async () => {
+      await repository.create(buildContact());
+
+      const page = await repository.findPage({ page: 5, pageSize: 10 });
+
+      expect(page.data).toEqual([]);
+      expect(page.total).toBe(1);
+    });
+  });
 });
