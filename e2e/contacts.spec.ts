@@ -114,3 +114,45 @@ test("Duplicate email: create and edit both surface a conflict error without los
   await expect(page.getByText(`A contact with email "${takenEmail}" already exists.`)).toBeVisible();
   await expect(page.getByLabel("Branch")).toHaveValue("Second Branch");
 });
+
+test("Pagination: navigates between pages and hides controls when everything fits on one page, scoped by search", async ({
+  page,
+}) => {
+  const branch = unique("PagBranch");
+  for (let i = 0; i < 11; i += 1) {
+    await addContact(page, unique(`Page Contact ${i}`), uniqueEmail(`page${i}`), branch);
+    await expect(page.getByText("Contact created successfully.").last()).toBeVisible();
+  }
+
+  await page.getByPlaceholder("Search contacts...").fill(branch);
+  await expect(page.getByText("Page 1 of 2")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Previous" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Next" })).toBeEnabled();
+
+  await page.getByRole("button", { name: "Next" }).click();
+  await expect(page.getByText("Page 2 of 2")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Next" })).toBeDisabled();
+
+  await page.getByRole("button", { name: "Previous" }).click();
+  await expect(page.getByText("Page 1 of 2")).toBeVisible();
+
+  await page.getByPlaceholder("Search contacts...").fill("no-such-branch-for-this-run");
+  await expect(page.getByText("No contacts found")).toBeVisible();
+});
+
+test("Search resets pagination back to page 1", async ({ page }) => {
+  const branch = unique("ResetBranch");
+  for (let i = 0; i < 11; i += 1) {
+    await addContact(page, unique(`Reset Contact ${i}`), uniqueEmail(`reset${i}`), branch);
+    await expect(page.getByText("Contact created successfully.").last()).toBeVisible();
+  }
+
+  await page.getByPlaceholder("Search contacts...").fill(branch);
+  await expect(page.getByText("Page 1 of 2")).toBeVisible();
+
+  await page.getByRole("button", { name: "Next" }).click();
+  await expect(page.getByText("Page 2 of 2")).toBeVisible();
+
+  await page.getByPlaceholder("Search contacts...").fill(branch.slice(0, -1));
+  await expect(page.getByText("Page 1 of 2")).toBeVisible();
+});

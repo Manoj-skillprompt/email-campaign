@@ -17,13 +17,7 @@ export function ContactPagination({ page, totalPages, onPageChange }: ContactPag
         Page {page} of {totalPages}
       </span>
       <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          disabled={page <= 1}
-          onClick={() => onPageChange(page - 1)}
-        >
+        <Button type="button" variant="secondary" size="sm" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
           Previous
         </Button>
         <Button
