@@ -59,7 +59,7 @@ Provide capability to manage individual client contacts within the internal appl
 - Permanently removes contact from the database upon user confirmation.
 - Deleting a contact does NOT alter historical sent campaigns.
 
-## 4. Validation Rules
+## 4. Validation Rules:
 
 - Required fields: Name, Email, Branch.
 - Email must be a valid email format (`user@domain.com`).
