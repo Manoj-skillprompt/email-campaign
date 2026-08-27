@@ -4,10 +4,18 @@ import { tsr } from "@/lib/api-client";
 
 const DEFAULT_PAGE_SIZE = 10;
 
+const MAX_PAGE_SIZE = 100;
+
+// groups still needs the full contact list; request the contract's max pageSize and
+// unwrap back to a plain array so existing callers don't need to know about pagination.
 export function useContactsQuery(search: string) {
   return tsr.listContacts.useQuery({
-    queryKey: ["contacts", { search }],
-    queryData: { query: { search: search || undefined } },
+    queryKey: ["contacts", { search, pageSize: MAX_PAGE_SIZE }],
+    queryData: { query: { search: search || undefined, pageSize: MAX_PAGE_SIZE } },
+    select: (response) => ({
+      ...response,
+      body: response.body.data,
+    }),
   });
 }
 
