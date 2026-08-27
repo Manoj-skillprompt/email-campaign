@@ -20,8 +20,12 @@ export const contactRouter = s.router(contactsContract, {
   },
 
   listContacts: async ({ query }) => {
-    const contacts = await contactService.listContacts(query.search);
-    return { status: 200, body: contacts };
+    const paginatedContacts = await contactService.listContacts({
+      search: query.search,
+      page: query.page,
+      pageSize: query.pageSize,
+    });
+    return { status: 200, body: paginatedContacts };
   },
 
   updateContact: async ({ params, body }) => {

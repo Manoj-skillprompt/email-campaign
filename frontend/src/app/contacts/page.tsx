@@ -7,13 +7,14 @@ import { useToast } from "@/components/ui/toast";
 import { ContactDeleteDialog } from "@/features/contacts/components/contact-delete-dialog";
 import { ContactEmptyState } from "@/features/contacts/components/contact-empty-state";
 import { ContactFormModal } from "@/features/contacts/components/contact-form-modal";
+import { ContactPagination } from "@/features/contacts/components/contact-pagination";
 import { ContactSearchBar } from "@/features/contacts/components/contact-search-bar";
 import { ContactTable } from "@/features/contacts/components/contact-table";
 import type { Contact, ContactWithGroup } from "@/features/contacts/contact.types";
 import {
-  useContactsQuery,
   useCreateContactMutation,
   useDeleteContactMutation,
+  usePaginatedContactsQuery,
   useUpdateContactMutation,
 } from "@/features/contacts/use-contacts";
 import { useGroupsQuery } from "@/features/groups/use-groups";
@@ -22,17 +23,21 @@ type FormModalState = { mode: "create" } | { mode: "edit"; contact: Contact } | 
 
 export default function ContactsPage() {
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [formModal, setFormModal] = useState<FormModalState>(null);
   const [contactPendingDelete, setContactPendingDelete] = useState<Contact | null>(null);
 
   const { showToast } = useToast();
-  const contactsQuery = useContactsQuery(search);
+  const contactsQuery = usePaginatedContactsQuery(search, page);
   const groupsQuery = useGroupsQuery("");
   const createContactMutation = useCreateContactMutation();
   const updateContactMutation = useUpdateContactMutation();
   const deleteContactMutation = useDeleteContactMutation();
 
-  const contacts = contactsQuery.data?.body ?? [];
+  const paginatedContacts = contactsQuery.data?.body;
+  const contacts = paginatedContacts?.data ?? [];
+  const total = paginatedContacts?.total ?? 0;
+  const totalPages = paginatedContacts?.totalPages ?? 0;
   const groups = groupsQuery.data?.body ?? [];
 
   const contactsWithGroup: ContactWithGroup[] = useMemo(
@@ -47,6 +52,11 @@ export default function ContactsPage() {
       })),
     [contacts, groups]
   );
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
 
   const handleFormSubmit = async (values: { name: string; email: string; branch: string }) => {
     if (formModal?.mode === "edit") {
@@ -70,7 +80,7 @@ export default function ContactsPage() {
       <div className="flex w-full items-center justify-between bg-background pb-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-[32px] font-bold text-foreground">Contacts</h1>
-          <p className="text-sm text-foreground-muted">{contacts.length} total contacts found</p>
+          <p className="text-sm text-foreground-muted">{total} total contacts found</p>
         </div>
         <Button type="button" onClick={() => setFormModal({ mode: "create" })}>
           <img src="/icons/contacts/plus.svg" alt="" className="size-3.5" />
@@ -80,15 +90,18 @@ export default function ContactsPage() {
 
       <div className="flex w-full flex-col gap-6 rounded-lg bg-white p-6">
         <div className="flex w-full items-center justify-between pb-3">
-          <ContactSearchBar value={search} onChange={setSearch} />
+          <ContactSearchBar value={search} onChange={handleSearchChange} />
         </div>
 
-        {contacts.length > 0 ? (
-          <ContactTable
-            contacts={contactsWithGroup}
-            onEdit={(contact) => setFormModal({ mode: "edit", contact })}
-            onDelete={(contact) => setContactPendingDelete(contact)}
-          />
+        {total > 0 ? (
+          <>
+            <ContactTable
+              contacts={contactsWithGroup}
+              onEdit={(contact) => setFormModal({ mode: "edit", contact })}
+              onDelete={(contact) => setContactPendingDelete(contact)}
+            />
+            <ContactPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          </>
         ) : (
           <ContactEmptyState onAddContact={() => setFormModal({ mode: "create" })} />
         )}

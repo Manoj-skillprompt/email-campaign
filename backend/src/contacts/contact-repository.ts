@@ -1,11 +1,21 @@
 import type { Contact } from "@email-campaign-v2/contracts";
-import { eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 
 import { db } from "../db/client";
 import { contacts } from "../db/schema";
 
 function toSearchPattern(term: string): string {
   return `%${term.toLowerCase()}%`;
+}
+
+function searchCondition(search: string) {
+  const pattern = toSearchPattern(search);
+  return sql`(lower(${contacts.name}) like ${pattern} or lower(${contacts.email}) like ${pattern} or lower(${contacts.branch}) like ${pattern})`;
+}
+
+export interface ListContactsPage {
+  data: Contact[];
+  total: number;
 }
 
 export class ContactRepository {
@@ -19,13 +29,26 @@ export class ContactRepository {
       return db.select().from(contacts);
     }
 
-    const pattern = toSearchPattern(search);
-    return db
-      .select()
-      .from(contacts)
-      .where(
-        sql`(lower(${contacts.name}) like ${pattern} or lower(${contacts.email}) like ${pattern} or lower(${contacts.branch}) like ${pattern})`
-      );
+    return db.select().from(contacts).where(searchCondition(search));
+  }
+
+  async findPage(options: { search?: string; page: number; pageSize: number }): Promise<ListContactsPage> {
+    const { search, page, pageSize } = options;
+    const condition = search ? searchCondition(search) : undefined;
+
+    const dataQuery = condition
+      ? db.select().from(contacts).where(condition).orderBy(desc(contacts.createdAt))
+      : db.select().from(contacts).orderBy(desc(contacts.createdAt));
+    const countQuery = condition
+      ? db
+          .select({ count: sql<number>`count(*)` })
+          .from(contacts)
+          .where(condition)
+      : db.select({ count: sql<number>`count(*)` }).from(contacts);
+
+    const [data, countRows] = await Promise.all([dataQuery.limit(pageSize).offset((page - 1) * pageSize), countQuery]);
+
+    return { data, total: Number(countRows[0]?.count ?? 0) };
   }
 
   async findById(id: string): Promise<Contact | undefined> {

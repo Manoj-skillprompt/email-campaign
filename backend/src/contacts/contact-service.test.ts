@@ -47,6 +47,17 @@ function createFakeRepository(initialContacts: Contact[] = []): ContactRepositor
     async delete(id) {
       contacts = contacts.filter((contact) => contact.id !== id);
     },
+    async findPage({ search, page, pageSize }) {
+      const matching = search
+        ? contacts.filter((contact) =>
+            [contact.name, contact.email, contact.branch].some((field) =>
+              field.toLowerCase().includes(search.toLowerCase())
+            )
+          )
+        : contacts;
+      const start = (page - 1) * pageSize;
+      return { data: matching.slice(start, start + pageSize), total: matching.length };
+    },
   } as ContactRepository;
 }
 
@@ -134,6 +145,30 @@ describe("ContactService", () => {
       const found = await service.getContactById("missing-id");
 
       expect(found).toBeUndefined();
+    });
+  });
+
+  describe("listContacts", () => {
+    it("computes totalPages from the repository's total count and requested pageSize", async () => {
+      const contacts = Array.from({ length: 5 }, (_, i) => buildContact({ id: `id-${i}`, email: `c${i}@example.com` }));
+      const service = new ContactService(createFakeRepository(contacts));
+
+      const result = await service.listContacts({ page: 1, pageSize: 2 });
+
+      expect(result.data).toHaveLength(2);
+      expect(result.total).toBe(5);
+      expect(result.totalPages).toBe(3);
+      expect(result.page).toBe(1);
+      expect(result.pageSize).toBe(2);
+    });
+
+    it("reports totalPages 0 when there are no matching contacts", async () => {
+      const service = new ContactService(createFakeRepository([]));
+
+      const result = await service.listContacts({ page: 1, pageSize: 10 });
+
+      expect(result.total).toBe(0);
+      expect(result.totalPages).toBe(0);
     });
   });
 

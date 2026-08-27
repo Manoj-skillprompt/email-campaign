@@ -38,4 +38,3 @@ for (const migrationPath of candidateMigrationPaths) {
     }
   }
 }
- 
