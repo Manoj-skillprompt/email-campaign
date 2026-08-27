@@ -59,7 +59,7 @@ Provide capability to manage individual client contacts within the internal appl
 - Allows updating existing contact details (`name`, `email`, `branch`).
 - Enforces email uniqueness validation on update.
 
-### REQ-CON-05: Delete Contact
+### REQ-CON-05: Delete Contact:
 
 - Permanently removes contact from the database upon user confirmation.
 - Deleting a contact does NOT alter historical sent campaigns.
