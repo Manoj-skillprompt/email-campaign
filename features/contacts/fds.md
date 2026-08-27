@@ -54,7 +54,7 @@ Provide capability to manage individual client contacts within the internal appl
 - Changing the search term resets pagination to page `1`.
 - Pagination metadata (`total`, `totalPages`) reflects the filtered result set, not the full contact set.
 
-### REQ-CON-04: Edit Contact
+### REQ-CON-04: Edit Contact:
 
 - Allows updating existing contact details (`name`, `email`, `branch`).
 - Enforces email uniqueness validation on update.
